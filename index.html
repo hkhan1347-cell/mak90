@@ -209,6 +209,7 @@
       <div class="lg" id="storyLeague"></div>
       <h2 id="storyTitle"></h2>
       <div id="storySummary"></div>
+      <a class="btn btn-primary" id="storyLink" target="_blank" rel="noopener" style="display:none;margin-top:6px;background:var(--blue);color:#fff"></a>
       <p class="modal-meta" id="storyMeta"></p>
     </div>
   </div>
@@ -281,6 +282,16 @@
     });
     var when = it.published ? new Date(it.published).toLocaleString() : '';
     document.getElementById('storyMeta').textContent = [it.source ? 'Source: ' + it.source : '', when].filter(Boolean).join(' · ');
+    // full story on the original site, only when we have the story page (not a front page)
+    var storyLink = document.getElementById('storyLink');
+    var isStoryPage = function (u) { return /^https:\/\//.test(u || '') && !/\/(football\/news|h\/Sport\/Football)\/?$/.test(u); };
+    if (isStoryPage(it.url)) {
+      storyLink.href = it.url;
+      storyLink.textContent = 'Read the full story on ' + (it.source || 'the source') + ' →';
+      storyLink.style.display = 'inline-block';
+    } else {
+      storyLink.style.display = 'none';
+    }
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
   }
