@@ -80,7 +80,7 @@
   .modal-box{background:var(--card);border-radius:14px;max-width:560px;width:100%;padding:32px;position:relative;border-top:4px solid var(--gold)}
   .modal-box .lg{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--blue)}
   .modal-box h2{font-size:24px;line-height:1.3;margin:8px 0 14px}
-  .modal-sum{font-size:17px;color:var(--text);margin:0 0 16px}
+  .modal-sum{font-size:17px;color:var(--text);margin:0 0 16px;line-height:1.65}
   .modal-meta{font-size:13px;color:var(--muted);margin:0}
   .modal-x{position:absolute;top:10px;right:14px;background:none;border:0;font-size:28px;line-height:1;color:var(--muted);cursor:pointer}
   .news .lg{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--blue)}
@@ -208,7 +208,7 @@
       <button class="modal-x" id="storyClose" aria-label="Close">×</button>
       <div class="lg" id="storyLeague"></div>
       <h2 id="storyTitle"></h2>
-      <p class="modal-sum" id="storySummary"></p>
+      <div id="storySummary"></div>
       <p class="modal-meta" id="storyMeta"></p>
     </div>
   </div>
@@ -269,7 +269,16 @@
     if (!it) return;
     document.getElementById('storyLeague').textContent = it.league || 'Football';
     document.getElementById('storyTitle').textContent = it.title || '';
-    document.getElementById('storySummary').textContent = it.summary || '';
+    // full write-up (our own words) if present, otherwise the short summary
+    var body = document.getElementById('storySummary');
+    body.innerHTML = '';
+    var paras = (it.body ? String(it.body).split(/\n\s*\n/) : [it.summary || '']).filter(Boolean);
+    paras.forEach(function (p) {
+      var el = document.createElement('p');
+      el.className = 'modal-sum';
+      el.textContent = p;
+      body.appendChild(el);
+    });
     var when = it.published ? new Date(it.published).toLocaleString() : '';
     document.getElementById('storyMeta').textContent = [it.source ? 'Source: ' + it.source : '', when].filter(Boolean).join(' · ');
     modal.classList.add('show');
