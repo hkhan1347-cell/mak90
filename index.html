@@ -11,8 +11,8 @@
 <meta name="description" content="MAK90+ football channel: live watchalongs, match predictions, Chelsea content, European football news and a free browser game.">
 <style>
   :root{
-    --navy:#0b1f3a; --navy2:#13305a;
-    --blue:#1d6fdc; --blue-d:#1758b0;
+    --navy:#0a2a8a; --navy2:#1f4fd6;
+    --blue:#1f4fd6; --blue-d:#1638a8; --gold:#f5b82e; --gold-d:#d99a12;
     --bg:#f5f7fb; --card:#ffffff; --line:#e2e8f2;
     --text:#14203a; --muted:#5b6a86;
     --yt:#e62117; --tg:#229ed9;
@@ -48,8 +48,8 @@
   .actions{display:flex;flex-wrap:wrap;gap:12px}
   .btn{display:inline-block;padding:13px 24px;border-radius:8px;font-weight:600;font-size:15px}
   .btn:hover{text-decoration:none}
-  .btn-primary{background:#fff;color:var(--navy)}
-  .btn-primary:hover{background:#eaf1ff}
+  .btn-primary{background:var(--gold);color:#0a1a4a}
+  .btn-primary:hover{background:var(--gold-d)}
   .btn-ghost{border:1px solid rgba(255,255,255,.35);color:#fff}
   .btn-ghost:hover{background:rgba(255,255,255,.08)}
 
@@ -72,7 +72,7 @@
   .newsmeta{color:var(--muted);font-size:14px;margin:-18px 0 24px}
   .newsgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
   .news{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:6px;color:var(--text)}
-  .news:hover{border-color:var(--blue);text-decoration:none}
+  .news:hover{border-color:var(--gold)}
   .news .lg{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--blue)}
   .news .ttl{font-weight:700;font-size:16px;line-height:1.35}
   .news .sum{color:var(--muted);font-size:14px}
@@ -93,7 +93,7 @@
   .tabs{display:flex;gap:6px;padding-top:0;padding-bottom:0}
   .tab{background:none;border:0;border-bottom:3px solid transparent;padding:16px 16px 13px;font:600 15px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--muted);cursor:pointer}
   .tab:hover{color:var(--text)}
-  .tab.on{color:var(--blue);border-bottom-color:var(--blue)}
+  .tab.on{color:var(--blue);border-bottom-color:var(--gold)}
   .panel{display:none}
   .panel.show{display:block}
   .panel.show.hero{display:block}
@@ -254,13 +254,13 @@
         ? 'Updated ' + new Date(data.updated).toLocaleString() + ' · refreshed every hour'
         : 'Refreshed every hour';
       list.innerHTML = items.map(function (it) {
-        var href = /^https?:\/\//.test(it.url || '') ? it.url : '#';
-        return '<a class="news" href="' + esc(href) + '" target="_blank" rel="noopener">' +
+        // stories are shown on this site; no links out to other websites
+        return '<article class="news">' +
           '<span class="lg">' + esc(it.league || 'Football') + '</span>' +
           '<span class="ttl">' + esc(it.title) + '</span>' +
           '<span class="sum">' + esc(it.summary) + '</span>' +
-          '<span class="src">' + esc(it.source || '') + '</span>' +
-          '</a>';
+          '<span class="src">' + (it.source ? 'Source: ' + esc(it.source) : '') + '</span>' +
+          '</article>';
       }).join('');
     })
     .catch(function () {
