@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MAK90+ | Football Watchalongs, Predictions and Chelsea</title>
+<meta name="description" content="MAK90+ football channel: live watchalongs, predictions, Chelsea content and more. Find every link here.">
+<style>
+  :root{
+    --bg:#060a16; --bg2:#0b1430; --card:#0f1b3a; --line:#22345f;
+    --blue:#3ab8ff; --blue2:#1d6fdc; --gold:#ffd33d;
+    --text:#eef3ff; --muted:#9fb0d8;
+    --yt:#ff3d3d; --ig:linear-gradient(135deg,#feda75,#fa7e1e 25%,#d62976 50%,#962fbf 75%,#4f5bd5);
+    --tg:#2aabee;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;overflow:hidden;padding:88px 0 96px;text-align:center;
+    background:
+      radial-gradient(900px 500px at 50% -10%,rgba(58,184,255,.35),transparent 60%),
+      radial-gradient(700px 420px at 90% 110%,rgba(29,111,220,.35),transparent 60%),
+      linear-gradient(180deg,var(--bg2),var(--bg));}
+  .pitch{position:absolute;inset:0;opacity:.13;pointer-events:none}
+  .hero .wrap{position:relative}
+  .logo{position:relative;display:inline-flex;align-items:center;justify-content:center;width:120px;height:120px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#3d7bf0,#0b2a5c 70%);border:3px solid #d4e2f7;
+    box-shadow:0 0 0 10px rgba(58,184,255,.12),0 20px 60px rgba(0,0,0,.6);font-size:26px;font-weight:900;letter-spacing:1px;
+    animation:float 5s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  h1{margin:26px 0 10px;font-size:clamp(40px,7vw,68px);font-weight:900;letter-spacing:3px;
+    background:linear-gradient(180deg,#ffffff,#9fd8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tag{color:var(--muted);font-size:clamp(16px,2.2vw,20px);margin:0 auto;max-width:620px;line-height:1.5}
+  .pill{display:inline-flex;align-items:center;gap:8px;margin-top:26px;padding:10px 18px;border-radius:999px;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font-weight:700;font-size:14px;color:var(--gold)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold);animation:blink 1.6s infinite}
+  @keyframes blink{50%{opacity:.3}}
+  .scroll{display:inline-block;margin-top:40px;color:var(--muted);font-size:14px;letter-spacing:2px;text-transform:uppercase}
+
+  /* ---------- sections ---------- */
+  section{padding:70px 0}
+  .eyebrow{color:var(--blue);font-weight:800;font-size:13px;letter-spacing:3px;text-transform:uppercase}
+  h2{margin:8px 0 26px;font-size:clamp(26px,4vw,36px);font-weight:900;letter-spacing:.5px}
+
+  /* ---------- link cards ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+  .card{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:10px;padding:26px;border-radius:20px;
+    background:linear-gradient(180deg,var(--card),#0a1330);border:1px solid var(--line);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+  .card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--accent)}
+  .card:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  .icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#fff;background:var(--accent)}
+  .card .name{font-weight:900;font-size:20px;margin-top:6px}
+  .card .meta{color:var(--muted);font-size:15px;line-height:1.5}
+  .card .go{margin-top:auto;padding-top:8px;font-weight:800;font-size:14px;color:var(--accent);letter-spacing:.3px}
+  .card .go span{display:inline-block;transition:transform .18s}
+  .card:hover .go span{transform:translateX(5px)}
+  .yt{--accent:var(--yt)}
+  .ig{--accent:#e1306c}
+  .tg{--accent:var(--tg)}
+  .ig .icon{background:var(--ig)}
+
+  /* ---------- game preview ---------- */
+  .play{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:center;padding:34px;border-radius:28px;
+    background:linear-gradient(135deg,rgba(29,111,220,.22),rgba(255,211,61,.08));border:1px solid var(--line)}
+  .play p{color:var(--muted);line-height:1.6;font-size:16px}
+  .btn{display:inline-block;margin-top:14px;padding:16px 30px;border-radius:999px;font-weight:900;letter-spacing:1px;color:#fff;
+    background:linear-gradient(#5cc2ff,#1d6fdc);box-shadow:0 10px 30px rgba(42,134,255,.45);transition:transform .15s}
+  .btn:hover{transform:translateY(-2px)}
+  .frame{width:100%;aspect-ratio:480/640;max-width:420px;justify-self:center;border:0;border-radius:18px;background:#070b18;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  @media (max-width:800px){.play{grid-template-columns:1fr;padding:24px}}
+
+  .newsmeta{color:var(--muted);font-size:14px;margin:-12px 0 22px}
+  .newsgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+  .news{display:flex;flex-direction:column;gap:8px;padding:20px;border-radius:16px;background:var(--card);border:1px solid var(--line);transition:border-color .15s,transform .15s}
+  .news:hover{border-color:var(--blue);transform:translateY(-3px)}
+  .news .tagl{align-self:flex-start;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:4px 8px;border-radius:999px;background:#1a2a52;color:var(--blue)}
+  .news .ttl{font-weight:800;font-size:17px;line-height:1.35;color:var(--text)}
+  .news .sum{color:var(--muted);font-size:14px;line-height:1.5}
+  .news .src{margin-top:auto;color:var(--muted);font-size:12px}
+  footer{padding:54px 0 70px;text-align:center;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+  footer .logo-sm{font-weight:900;color:#fff;letter-spacing:2px;margin-bottom:6px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <svg class="pitch" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g fill="none" stroke="#9fd8ff" stroke-width="3">
+      <rect x="40" y="40" width="920" height="520"/>
+      <line x1="500" y1="40" x2="500" y2="560"/>
+      <circle cx="500" cy="300" r="90"/>
+      <rect x="40" y="170" width="150" height="260"/>
+      <rect x="810" y="170" width="150" height="260"/>
+    </g>
+  </svg>
+  <div class="wrap">
+    <div class="logo">MAK90+</div>
+    <h1>MAK90+</h1>
+    <p class="tag">Live football watchalongs, predictions, Chelsea content and a game you can play right here.</p>
+    <div class="pill"><span class="dot"></span>Watch live on YouTube</div>
+    <div><a class="scroll" href="#follow">↓ Follow the channel</a></div>
+  </div>
+</header>
+
+<main>
+  <section id="follow">
+    <div class="wrap">
+      <div class="eyebrow">Find us</div>
+      <h2>Follow MAK90+</h2>
+      <div class="grid">
+        <a class="card yt" href="https://www.youtube.com/@mak90plus" target="_blank" rel="noopener">
+          <div class="icon">▶</div>
+          <div class="name">YouTube</div>
+          <div class="meta">Watchalongs, predictions and every video. Subscribe so you never miss a stream.</div>
+          <div class="go">Watch on YouTube <span>→</span></div>
+        </a>
+        <a class="card ig" href="https://www.instagram.com/mak90plus/" target="_blank" rel="noopener">
+          <div class="icon">◎</div>
+          <div class="name">Instagram</div>
+          <div class="meta">@MAK90PLUS. Clips, updates and what's behind the scenes.</div>
+          <div class="go">Follow on Instagram <span>→</span></div>
+        </a>
+        <a class="card tg" href="https://t.me/MAK90Plus" target="_blank" rel="noopener">
+          <div class="icon">✈</div>
+          <div class="name">Telegram</div>
+          <div class="meta">Stream alerts and quick updates, straight to your phone.</div>
+          <div class="go">Join on Telegram <span>→</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="news">
+    <div class="wrap">
+      <div class="eyebrow">European football</div>
+      <h2>Latest news</h2>
+      <p class="newsmeta" id="newsMeta">Loading the latest stories…</p>
+      <div class="newsgrid" id="newsList"></div>
+    </div>
+  </section>
+
+  <section id="play">
+    <div class="wrap">
+      <div class="eyebrow">Play now</div>
+      <h2>Penalty Streak</h2>
+      <div class="play">
+        <div>
+          <p>Take five kicks, then face the AI's shots. Build a streak, out-read the keeper and go to sudden death if it's level. Works on desktop and phone.</p>
+          <a class="btn" href="penalty-streak/index.html">PLAY IN A NEW TAB</a>
+        </div>
+        <iframe class="frame" src="penalty-streak/index.html" title="Penalty Streak game" loading="lazy"></iframe>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="logo-sm">MAK90+</div>
+    <div>© MAK90+ · Thanks for watching</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var list = document.getElementById('newsList');
+  var meta = document.getElementById('newsMeta');
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  // news.json is refreshed every hour; no-store makes sure visitors get the newest copy
+  fetch('news.json', { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (data) {
+      var items = (data && data.items) || [];
+      if (!items.length) {
+        meta.textContent = 'No stories yet. The next update will appear here.';
+        return;
+      }
+      meta.textContent = data.updated
+        ? 'Updated ' + new Date(data.updated).toLocaleString() + ' · refreshed every hour'
+        : 'Refreshed every hour';
+      list.innerHTML = items.map(function (it) {
+        var href = /^https?:\/\//.test(it.url || '') ? it.url : '#';
+        return '<a class="news" href="' + esc(href) + '" target="_blank" rel="noopener">' +
+          '<span class="tagl">' + esc(it.league || 'Football') + '</span>' +
+          '<span class="ttl">' + esc(it.title) + '</span>' +
+          '<span class="sum">' + esc(it.summary) + '</span>' +
+          '<span class="src">' + esc(it.source || '') + '</span>' +
+          '</a>';
+      }).join('');
+    })
+    .catch(function () {
+      meta.textContent = 'News is unavailable right now. Please check back soon.';
+    });
+})();
+</script>
+</body>
+</html>
