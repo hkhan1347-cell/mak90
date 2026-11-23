@@ -73,6 +73,16 @@
   .newsgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
   .news{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:6px;color:var(--text)}
   .news:hover{border-color:var(--gold)}
+  .news{cursor:pointer}
+  .news:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .modal{position:fixed;inset:0;background:rgba(5,12,40,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+  .modal.show{display:flex}
+  .modal-box{background:var(--card);border-radius:14px;max-width:560px;width:100%;padding:32px;position:relative;border-top:4px solid var(--gold)}
+  .modal-box .lg{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--blue)}
+  .modal-box h2{font-size:24px;line-height:1.3;margin:8px 0 14px}
+  .modal-sum{font-size:17px;color:var(--text);margin:0 0 16px}
+  .modal-meta{font-size:13px;color:var(--muted);margin:0}
+  .modal-x{position:absolute;top:10px;right:14px;background:none;border:0;font-size:28px;line-height:1;color:var(--muted);cursor:pointer}
   .news .lg{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--blue)}
   .news .ttl{font-weight:700;font-size:16px;line-height:1.35}
   .news .sum{color:var(--muted);font-size:14px}
@@ -193,6 +203,16 @@
     </div>
   </section>
 
+  <div class="modal" id="storyModal" aria-hidden="false">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="storyTitle">
+      <button class="modal-x" id="storyClose" aria-label="Close">×</button>
+      <div class="lg" id="storyLeague"></div>
+      <h2 id="storyTitle"></h2>
+      <p class="modal-sum" id="storySummary"></p>
+      <p class="modal-meta" id="storyMeta"></p>
+    </div>
+  </div>
+
   <section id="play" class="panel" data-panel="play">
     <div class="wrap">
       <div class="game">
@@ -243,6 +263,23 @@
   });
   show((location.hash || '#news').slice(1));
 
+  // on-site story reader
+  var modal = document.getElementById('storyModal');
+  function openStory(it) {
+    if (!it) return;
+    document.getElementById('storyLeague').textContent = it.league || 'Football';
+    document.getElementById('storyTitle').textContent = it.title || '';
+    document.getElementById('storySummary').textContent = it.summary || '';
+    var when = it.published ? new Date(it.published).toLocaleString() : '';
+    document.getElementById('storyMeta').textContent = [it.source ? 'Source: ' + it.source : '', when].filter(Boolean).join(' · ');
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeStory() { modal.classList.remove('show'); document.body.style.overflow = ''; }
+  document.getElementById('storyClose').addEventListener('click', closeStory);
+  modal.addEventListener('click', function (e) { if (e.target === modal) closeStory(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeStory(); });
+
   // latest videos: videos.json is refreshed from the channel; links open on YouTube
   var vList = document.getElementById('videosList');
   var vMeta = document.getElementById('videosMeta');
@@ -283,14 +320,23 @@
         ? 'Updated ' + new Date(data.updated).toLocaleString() + ' · refreshed every hour'
         : 'Refreshed every hour';
       list.innerHTML = items.map(function (it) {
-        // stories are shown on this site; no links out to other websites
-        return '<article class="news">' +
+        // stories open in the on-site reader; no links out to other websites
+        var idx = items.indexOf(it);
+        return '<article class="news" role="button" tabindex="0" data-idx="' + idx + '">' +
           '<span class="lg">' + esc(it.league || 'Football') + '</span>' +
           '<span class="ttl">' + esc(it.title) + '</span>' +
           '<span class="sum">' + esc(it.summary) + '</span>' +
-          '<span class="src">' + (it.source ? 'Source: ' + esc(it.source) : '') + '</span>' +
+          '<span class="src">' + (it.source ? 'Source: ' + esc(it.source) : '') + ' · Read →</span>' +
           '</article>';
       }).join('');
+      list.onclick = function (e) {
+        var card = e.target.closest('.news');
+        if (card) openStory(items[+card.getAttribute('data-idx')]);
+      };
+      list.onkeydown = function (e) {
+        var card = e.target.closest && e.target.closest('.news');
+        if (card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openStory(items[+card.getAttribute('data-idx')]); }
+      };
     })
     .catch(function () {
       meta.textContent = 'News is unavailable right now. Please check back soon.';
