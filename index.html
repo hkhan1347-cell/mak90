@@ -129,6 +129,46 @@
   footer{background:var(--navy);color:#c9d6ee;padding:36px 0;font-size:14px}
   footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:center}
   footer a{color:#fff}
+
+  /* ---- visual polish ---- */
+  body{background:radial-gradient(1200px 500px at 50% -200px,#e8efff,transparent 70%),var(--bg)}
+  header.top{background:linear-gradient(90deg,#071a5c,#0a2a8a 55%,#1638a8);box-shadow:0 4px 18px rgba(10,42,138,.25)}
+  .brand{letter-spacing:.3px}
+  .brand .logo-sm{height:40px;border-radius:50%;box-shadow:0 0 0 2px var(--gold),0 0 14px rgba(245,184,46,.45)}
+  nav a{font-weight:600;position:relative;padding:6px 2px}
+  nav a::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .25s}
+  nav a:hover::after{transform:scaleX(1)}
+  .hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#071a5c 0%,#0a2a8a 45%,#1f4fd6 100%)}
+  .hero::before{content:"";position:absolute;inset:-40%;background:radial-gradient(circle at 80% 30%,rgba(245,184,46,.22),transparent 40%),radial-gradient(circle at 15% 80%,rgba(255,255,255,.08),transparent 45%);pointer-events:none}
+  .hero .wrap{position:relative}
+  .hero h1{font-size:50px;letter-spacing:-.8px;text-shadow:0 2px 20px rgba(0,0,0,.25)}
+  .hero-logo{animation:float 6s ease-in-out infinite;filter:drop-shadow(0 0 30px rgba(245,184,46,.35)) drop-shadow(0 18px 40px rgba(0,0,0,.4));border-radius:50%}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .btn{transition:transform .15s,box-shadow .15s,background .15s}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.2)}
+  .btn-primary{box-shadow:0 6px 16px rgba(245,184,46,.35)}
+  .eyebrow{display:inline-block;background:rgba(31,79,214,.08);padding:4px 10px;border-radius:999px;letter-spacing:1.4px}
+  h2{font-size:32px;letter-spacing:-.4px}
+  .card,.news,.feature,.tablewrap{transition:transform .2s,box-shadow .2s,border-color .2s;box-shadow:0 1px 2px rgba(10,42,138,.04)}
+  .card:hover,.news:hover,.feature:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(10,42,138,.12);border-color:var(--gold)}
+  .card{border-top:3px solid transparent}
+  .card:hover{border-top-color:var(--gold)}
+  .news .ttl{font-size:17px}
+  .thumb{box-shadow:inset 0 -40px 60px -30px rgba(0,0,0,.35)}
+  .thumb img{animation:spin 40s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .tabbar{backdrop-filter:blur(8px);background:rgba(255,255,255,.92);box-shadow:0 2px 12px rgba(10,42,138,.06)}
+  .tab{transition:color .2s}
+  .tab.on{font-weight:700}
+  .chip.on{box-shadow:0 4px 12px rgba(31,79,214,.3)}
+  .standings tr.cl td.pos{box-shadow:inset 4px 0 0 var(--blue)}
+  .standings tbody tr:nth-child(even) td{background:#fbfcff}
+  .modal{backdrop-filter:blur(4px)}
+  .modal-box{box-shadow:0 30px 80px rgba(0,0,0,.35);animation:pop .25s ease-out}
+  @keyframes pop{from{transform:translateY(12px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+  footer{background:linear-gradient(90deg,#071a5c,#0a2a8a);border-top:3px solid var(--gold)}
+  @media (max-width:820px){.hero h1{font-size:34px}h2{font-size:26px}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -262,7 +302,7 @@
 
 <footer>
   <div class="wrap">
-    <div>© MAK90+. All rights reserved.</div>
+    <div style="display:flex;align-items:center;gap:12px"><img src="logo.jpg" alt="" style="height:36px;width:36px;border-radius:50%;object-fit:cover" onerror="this.remove()"><span>© MAK90+. All rights reserved.</span></div>
     <div>
       <a href="https://www.youtube.com/@mak90plus" target="_blank" rel="noopener">YouTube</a> ·
       <a href="https://www.instagram.com/mak90plus/" target="_blank" rel="noopener">Instagram</a> ·
