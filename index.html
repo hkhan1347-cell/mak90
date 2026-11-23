@@ -175,6 +175,15 @@
     </div>
   </section>
 
+  <section id="videos" class="panel" data-panel="home">
+    <div class="wrap">
+      <div class="eyebrow">Latest videos</div>
+      <h2>Watch on YouTube</h2>
+      <p class="newsmeta" id="videosMeta">Loading the latest videos…</p>
+      <div class="grid" id="videosList"></div>
+    </div>
+  </section>
+
   <section id="news" class="alt panel" data-panel="news">
     <div class="wrap">
       <div class="eyebrow">European football</div>
@@ -233,6 +242,26 @@
     });
   });
   show((location.hash || '#news').slice(1));
+
+  // latest videos: videos.json is refreshed from the channel; links open on YouTube
+  var vList = document.getElementById('videosList');
+  var vMeta = document.getElementById('videosMeta');
+  fetch('videos.json', { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (data) {
+      var items = (data && data.items) || [];
+      if (!items.length) { vMeta.textContent = 'No videos yet. Check the channel.'; return; }
+      vMeta.textContent = 'Newest uploads from MAK90+';
+      vList.innerHTML = items.slice(0, 8).map(function (v) {
+        var d = new Date(v.published).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+        return '<a class="card" href="https://www.youtube.com/watch?v=' + esc(v.id) + '" target="_blank" rel="noopener">' +
+          '<img src="https://i.ytimg.com/vi/' + esc(v.id) + '/hqdefault.jpg" alt="" style="width:100%;border-radius:8px;aspect-ratio:16/9;object-fit:cover">' +
+          '<h3 style="font-size:16px">' + esc(v.title) + '</h3>' +
+          '<p>' + esc(d) + (v.duration ? ' · ' + esc(v.duration) : '') + '</p>' +
+          '<span class="link">Watch on YouTube →</span></a>';
+      }).join('');
+    })
+    .catch(function () { vMeta.textContent = 'Videos are unavailable right now.'; });
 
   var list = document.getElementById('newsList');
   var meta = document.getElementById('newsMeta');
