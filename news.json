@@ -1,93 +1,165 @@
 {
- "updated": "2026-11-23T23:20:00Z",
+ "updated": "2026-11-23T23:55:00Z",
  "scope": "European football",
  "items": [
   {
    "title": "Brentford thump four past 10-man Everton",
-   "summary": "Lewis-Potter scored twice as Brentford beat Everton, who had been reduced to ten men.",
+   "summary": "Lewis-Potter scored twice as Brentford beat ten-man Everton 4-0.",
    "league": "Premier League",
    "source": "Sky Sports",
    "url": "https://www.skysports.com/football/news/13611984/brentford-4-0-everton-keane-lewis-potter-scores-twice-as-bees-romp-past-10-man-toffees",
-   "published": "2026-11-23T20:31:00Z"
+   "published": null
   },
   {
    "title": "Janelt's rocket seals Brentford win",
-   "summary": "Janelt scored a long-range strike as Brentford moved up to sixth in the table.",
+   "summary": "Janelt's long-range strike was one of Brentford's four goals against Everton.",
    "league": "Premier League",
    "source": "Sky Sports",
    "url": "https://www.skysports.com/football/video/13615838/brentford-4-0-everton-premier-league-highlights",
-   "published": "2026-11-23T22:26:00Z"
+   "published": null
   },
   {
-   "title": "Moyes says Everton dropped below their standards",
-   "summary": "Moyes says his side fell short of its own standards in the defeat at Brentford.",
+   "title": "Carvalho's corner goal makes it four",
+   "summary": "Carvalho scored from a Brentford corner to complete the 4-0 win over Everton.",
+   "league": "Premier League",
+   "source": "Sky Sports",
+   "url": "https://www.skysports.com/football/video/13615832/goal-f-carvalho-90-brentford-4-0-everton",
+   "published": null
+  },
+  {
+   "title": "Moyes says Everton fell short of their standards",
+   "summary": "Everton boss David Moyes admitted his side dropped below their usual level in defeat.",
    "league": "Premier League",
    "source": "Sky Sports",
    "url": "https://www.skysports.com/football/video/13615843/david-moyes-everton-dropped-below-our-standards-in-brentford-defeat",
-   "published": "2026-11-23T22:43:00Z"
+   "published": null
   },
   {
    "title": "Debate over Tarkowski's red card",
-   "summary": "Carragher argues the challenge that earned Tarkowski a red card belonged to a different era.",
+   "summary": "The VAR-reviewed red card shown to Everton's Tarkowski is being debated by pundits.",
    "league": "Premier League",
    "source": "Sky Sports",
    "url": "https://www.skysports.com/football/video/13615839/was-james-tarkowskis-controversial-red-card-for-foul-yehor-yarmolyuk-correct-decision",
-   "published": "2026-11-23T22:33:00Z"
+   "published": null
+  },
+  {
+   "title": "Keith Andrews on Brentford's sixth place",
+   "summary": "Brentford's Keith Andrews says fans need to be realistic after the club climbed to sixth.",
+   "league": "Premier League",
+   "source": "Sky Sports",
+   "url": "https://www.skysports.com/football/video/13615842/keith-andrews-people-need-to-get-real-after-going-6th-in-league",
+   "published": null
+  },
+  {
+   "title": "Brentford defender linked with Man Utd",
+   "summary": "Reports say Nathan Collins is a January target for Manchester United.",
+   "league": "Transfers",
+   "source": "Sky Sports",
+   "url": "https://www.skysports.com/football/news/13615837/man-utd-transfer-news-brentford-defender-nathan-collins-emerges-as-january-target-paper-talk",
+   "published": null
+  },
+  {
+   "title": "De Bruyne on his affection for Man City",
+   "summary": "Kevin De Bruyne spoke about his feelings for Manchester City before returning to the Etihad with Napoli.",
+   "league": "Champions League",
+   "source": "Sky Sports",
+   "url": "https://www.skysports.com/football/video/13615812/kevin-de-bruyne-shares-his-affection-with-manchester-city-ahead-of-return-to-the-etihad-with-napoli",
+   "published": null
   },
   {
    "title": "Carragher's surprising claim about Liverpool",
-   "summary": "Carragher makes a claim about Liverpool following Manchester United's heavy defeat.",
+   "summary": "Jamie Carragher made a bold claim about Liverpool after Manchester United's heavy defeat.",
    "league": "Premier League",
-   "source": "The Standard (via NewsNow)",
+   "source": "The Standard",
    "url": "https://c.newsnow.co.uk/A/1330522476?-833:12",
    "published": null
   },
   {
-   "title": "Keane criticises Neville and Man Utd",
-   "summary": "Roy Keane has criticised Gary Neville and Manchester United after the 4-0 defeat to Liverpool.",
-   "league": "Premier League",
-   "source": "Goal.com (via NewsNow)",
-   "url": "https://www.newsnow.co.uk/h/Sport/Football",
-   "published": null
-  },
-  {
    "title": "Flick plans penalty talks with Yamal and Raphinha",
-   "summary": "Barcelona's coach plans penalty talks with two forwards after the win over Villarreal.",
+   "summary": "Hansi Flick wants to discuss penalty duties with his stars after Barcelona beat Villarreal.",
    "league": "LaLiga",
-   "source": "Barca Blaugranes (via NewsNow)",
+   "source": "Barca Blaugranes",
    "url": "https://c.newsnow.co.uk/A/1330522625?-833:12",
    "published": null
   },
   {
    "title": "Chivu angry as Inter let two-goal leads slip",
-   "summary": "Inter's coach is unhappy that his side threw away two-goal leads three times in a draw at Atalanta.",
+   "summary": "Cristian Chivu criticised Inter for throwing away two-goal leads.",
    "league": "Serie A",
-   "source": "Goal.com (via NewsNow)",
+   "source": "Goal.com",
    "url": "https://c.newsnow.co.uk/A/1330516562?-833:12",
    "published": null
   },
   {
-   "title": "Napoli's plan to beat Manchester City",
-   "summary": "Cannavaro outlines how Napoli intend to beat Manchester City.",
-   "league": "Other",
-   "source": "Sport Witness (via NewsNow)",
-   "url": "https://www.newsnow.co.uk/h/Sport/Football",
-   "published": null
-  },
-  {
    "title": "Villarreal reject Pepe eye-surgery claim",
-   "summary": "Villarreal deny that Nicolas Pepe needed eye surgery after watching a solar eclipse.",
+   "summary": "Villarreal have dismissed claims that Nicolas Pepe needed eye surgery after the solar eclipse.",
    "league": "LaLiga",
-   "source": "Goal.com (via NewsNow)",
+   "source": "Goal.com",
    "url": "https://c.newsnow.co.uk/A/1330512531?-833:12",
    "published": null
   },
   {
-   "title": "PSG linked with Premier League star after Doué injury",
-   "summary": "PSG are reportedly linked with a Premier League player after Désiré Doué's ACL injury.",
-   "league": "Transfers",
-   "source": "talkSPORT (via NewsNow)",
+   "title": "PSG linked with a Premier League star",
+   "summary": "PSG are reportedly considering a Premier League player after Désiré Doué's ACL injury.",
+   "league": "Ligue 1",
+   "source": "talkSPORT",
    "url": "https://c.newsnow.co.uk/A/1330529189?-833:12",
+   "published": null
+  },
+  {
+   "title": "Who can challenge Arsenal for the title?",
+   "summary": "BBC looks at which clubs could push Arsenal in the Premier League title race.",
+   "league": "Premier League",
+   "source": "BBC",
+   "url": "https://c.newsnow.co.uk/A/1330528815?-833:12",
+   "published": null
+  },
+  {
+   "title": "Shearer on Newcastle's transfer concern",
+   "summary": "Alan Shearer has repeated his concern about a Newcastle United transfer.",
+   "league": "Premier League",
+   "source": "Chronicle Live",
+   "url": "https://c.newsnow.co.uk/A/1330528633?-833:12",
+   "published": null
+  },
+  {
+   "title": "Hornicek backed after Arsenal draw",
+   "summary": "A former England star has defended Newcastle goalkeeper Lukas Hornicek after the Arsenal draw.",
+   "league": "Premier League",
+   "source": "Shields Gazette",
+   "url": "https://c.newsnow.co.uk/A/1330524125?-833:12",
+   "published": null
+  },
+  {
+   "title": "What Leeds did at Chelsea",
+   "summary": "A column looks at what Leeds United did at Chelsea and a point often overlooked.",
+   "league": "Premier League",
+   "source": "Leeds Live",
+   "url": "https://c.newsnow.co.uk/A/1330510187?-833:12",
+   "published": null
+  },
+  {
+   "title": "Diop on Ipswich's dip in form",
+   "summary": "Issa Diop says the team must manage a tough spell after a dip in form.",
+   "league": "Other",
+   "source": "East Anglian Daily Times",
+   "url": "https://c.newsnow.co.uk/A/1330528570?-833:12",
+   "published": null
+  },
+  {
+   "title": "QPR preview ahead of Norwich",
+   "summary": "A preview show looks ahead to QPR's trip to Norwich.",
+   "league": "Other",
+   "source": "Hoops & Dreams",
+   "url": "https://c.newsnow.co.uk/A/1330528690?-833:12",
+   "published": null
+  },
+  {
+   "title": "Did ex-Arsenal star Pepe need eye surgery?",
+   "summary": "Metro looks into claims that Nicolas Pepe needed eye surgery after watching a solar eclipse.",
+   "league": "Other",
+   "source": "Metro",
+   "url": "https://c.newsnow.co.uk/A/1330528884?-833:12",
    "published": null
   }
  ]

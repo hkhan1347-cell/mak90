@@ -74,6 +74,10 @@
   .news{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:6px;color:var(--text)}
   .news:hover{border-color:var(--gold)}
   .news{cursor:pointer}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:-8px 0 22px}
+  .chip{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:6px 14px;font:600 13px system-ui,sans-serif;cursor:pointer}
+  .chip:hover{border-color:var(--blue);color:var(--blue)}
+  .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
   .news:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   .modal{position:fixed;inset:0;background:rgba(5,12,40,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
   .modal.show{display:flex}
@@ -199,6 +203,7 @@
       <div class="eyebrow">European football</div>
       <h2>Latest news</h2>
       <p class="newsmeta" id="newsMeta">Loading the latest stories…</p>
+      <div class="chips" id="newsFilters"></div>
       <div class="newsgrid" id="newsList"></div>
     </div>
   </section>
@@ -327,40 +332,60 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
-  // news.json is refreshed every hour; no-store makes sure visitors get the newest copy
-  fetch('news.json', { cache: 'no-store' })
-    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function (data) {
-      var items = (data && data.items) || [];
-      if (!items.length) {
-        meta.textContent = 'No stories yet. The next update will appear here.';
-        return;
-      }
-      meta.textContent = data.updated
-        ? 'Updated ' + new Date(data.updated).toLocaleString() + ' · refreshed every hour'
-        : 'Refreshed every hour';
-      list.innerHTML = items.map(function (it) {
-        // stories open in the on-site reader; no links out to other websites
-        var idx = items.indexOf(it);
-        return '<article class="news" role="button" tabindex="0" data-idx="' + idx + '">' +
-          '<span class="lg">' + esc(it.league || 'Football') + '</span>' +
-          '<span class="ttl">' + esc(it.title) + '</span>' +
-          '<span class="sum">' + esc(it.summary) + '</span>' +
-          '<span class="src">' + (it.source ? 'Source: ' + esc(it.source) : '') + ' · Read →</span>' +
-          '</article>';
-      }).join('');
-      list.onclick = function (e) {
-        var card = e.target.closest('.news');
-        if (card) openStory(items[+card.getAttribute('data-idx')]);
-      };
-      list.onkeydown = function (e) {
-        var card = e.target.closest && e.target.closest('.news');
-        if (card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openStory(items[+card.getAttribute('data-idx')]); }
-      };
-    })
-    .catch(function () {
-      meta.textContent = 'News is unavailable right now. Please check back soon.';
-    });
+  // news: loads news.json, refreshes itself every 5 minutes, filters by league
+  var current = [], activeLeague = 'All';
+  var filters = document.getElementById('newsFilters');
+  function renderFilters() {
+    var leagues = ['All'].concat(Array.from(new Set(current.map(function (i) { return i.league || 'Other'; }))));
+    filters.innerHTML = leagues.map(function (l) {
+      return '<button class="chip' + (l === activeLeague ? ' on' : '') + '" data-league="' + esc(l) + '">' + esc(l) + '</button>';
+    }).join('');
+  }
+  function renderNews() {
+    var items = current.filter(function (i) { return activeLeague === 'All' || (i.league || 'Other') === activeLeague; });
+    list.innerHTML = items.length ? items.map(function (it) {
+      var idx = current.indexOf(it);
+      return '<article class="news" role="button" tabindex="0" data-idx="' + idx + '">' +
+        '<span class="lg">' + esc(it.league || 'Football') + '</span>' +
+        '<span class="ttl">' + esc(it.title) + '</span>' +
+        '<span class="sum">' + esc(it.summary) + '</span>' +
+        '<span class="src">' + (it.source ? 'Source: ' + esc(it.source) : '') + ' · Read →</span>' +
+        '</article>';
+    }).join('') : '<p class="newsmeta">No stories in this league right now.</p>';
+  }
+  function loadNews() {
+    fetch('news.json', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (data) {
+        var items = (data && data.items) || [];
+        if (!items.length) { meta.textContent = 'No stories yet. The next update will appear here.'; return; }
+        current = items;
+        renderFilters();
+        renderNews();
+        meta.textContent = items.length + ' stories · updated ' + (data.updated ? new Date(data.updated).toLocaleString() : 'recently') + ' · refreshes automatically';
+      })
+      .catch(function () {
+        if (!current.length) meta.textContent = 'News is unavailable right now. Please check back soon.';
+      });
+  }
+  filters.addEventListener('click', function (e) {
+    var b = e.target.closest('.chip');
+    if (!b) return;
+    activeLeague = b.getAttribute('data-league');
+    renderFilters();
+    renderNews();
+  });
+  list.addEventListener('click', function (e) {
+    var card = e.target.closest('.news');
+    if (card) openStory(current[+card.getAttribute('data-idx')]);
+  });
+  list.addEventListener('keydown', function (e) {
+    var card = e.target.closest && e.target.closest('.news');
+    if (card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openStory(current[+card.getAttribute('data-idx')]); }
+  });
+  loadNews();
+  setInterval(loadNews, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) loadNews(); });
 })();
 </script>
 </body>
