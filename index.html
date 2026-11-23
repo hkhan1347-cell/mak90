@@ -74,6 +74,17 @@
   .news{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:6px;color:var(--text)}
   .news:hover{border-color:var(--gold)}
   .news{cursor:pointer}
+  .tablewrap{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:auto}
+  table.standings{width:100%;border-collapse:collapse;font-size:15px;min-width:460px}
+  .standings th,.standings td{padding:12px 14px;text-align:right;border-bottom:1px solid var(--line)}
+  .standings th{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+  .standings td.pos,.standings th.pos{text-align:center;width:52px;font-weight:700}
+  .standings td.team,.standings th.team{text-align:left;font-weight:600}
+  .standings td.pts{font-weight:800;color:var(--blue)}
+  .standings tr:last-child td{border-bottom:0}
+  .standings tr.cl td.pos{box-shadow:inset 4px 0 0 var(--blue)}
+  .standings tr.rel td.pos{box-shadow:inset 4px 0 0 #d64545}
+  .standings tr:hover td{background:#f7f9fd}
   .thumb{position:relative;overflow:hidden;border-radius:10px;height:150px;margin:-4px -4px 10px;display:flex;align-items:flex-end;padding:12px}
   .thumb img{position:absolute;right:-18px;top:-18px;width:130px;height:130px;object-fit:cover;border-radius:50%;opacity:.22}
   .thumb span{position:relative;font:800 13px system-ui,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.35);padding:5px 10px;border-radius:6px}
@@ -128,6 +139,7 @@
     <nav>
       <a href="#" data-tab="home">MAK90+</a>
       <a href="#" data-tab="news">News</a>
+      <a href="#" data-tab="tables">Tables</a>
       <a href="#" data-tab="play">Games</a>
     </nav>
   </div>
@@ -137,6 +149,7 @@
   <div class="wrap tabs" role="tablist">
     <button class="tab on" role="tab" data-tab="home">MAK90+</button>
     <button class="tab" role="tab" data-tab="news">News</button>
+    <button class="tab" role="tab" data-tab="tables">Tables</button>
     <button class="tab" role="tab" data-tab="play">Games</button>
   </div>
 </div>
@@ -222,6 +235,16 @@
     </div>
   </div>
 
+  <section id="tables" class="panel" data-panel="tables">
+    <div class="wrap">
+      <div class="eyebrow">League tables</div>
+      <h2>League standings</h2>
+      <p class="newsmeta" id="tableMeta">Loading the tables…</p>
+      <div class="chips" id="tableChips"></div>
+      <div class="tablewrap" id="tableBox"></div>
+    </div>
+  </section>
+
   <section id="play" class="panel" data-panel="play">
     <div class="wrap">
       <div class="game">
@@ -253,7 +276,7 @@
   // tabs: show one group of panels at a time, remembering the last tab in the URL hash
   var tabs = document.querySelectorAll('[data-tab]');
   function show(name) {
-    if (!/^(home|news|play)$/.test(name)) name = 'news';
+    if (!/^(home|news|tables|play)$/.test(name)) name = 'news';
     document.querySelectorAll('[data-panel]').forEach(function (p) {
       p.classList.toggle('show', p.getAttribute('data-panel') === name);
     });
@@ -335,6 +358,41 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
+  // league tables: standings.json (refreshed with the hourly update)
+  var tableData = null, activeTable = null;
+  function renderTable() {
+    var rows = tableData.leagues[activeTable] || [];
+    var n = rows.length;
+    document.getElementById('tableBox').innerHTML =
+      '<table class="standings"><thead><tr><th class="pos">#</th><th class="team">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        var cls = r.rank <= 4 ? ' class="cl"' : (r.rank > n - 3 ? ' class="rel"' : '');
+        return '<tr' + cls + '><td class="pos">' + r.rank + '</td><td class="team">' + esc(r.team) + '</td><td>' + r.played + '</td><td>' + r.won + '</td><td>' + r.drawn + '</td><td>' + r.lost + '</td><td class="pts">' + r.points + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+  function renderTableChips() {
+    document.getElementById('tableChips').innerHTML = Object.keys(tableData.leagues).map(function (l) {
+      return '<button class="chip' + (l === activeTable ? ' on' : '') + '" data-league="' + esc(l) + '">' + esc(l) + '</button>';
+    }).join('');
+  }
+  document.getElementById('tableChips').addEventListener('click', function (e) {
+    var b = e.target.closest('.chip');
+    if (!b || !tableData) return;
+    activeTable = b.getAttribute('data-league');
+    renderTableChips();
+    renderTable();
+  });
+  fetch('standings.json', { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (data) {
+      tableData = data;
+      activeTable = Object.keys(data.leagues)[0];
+      renderTableChips();
+      renderTable();
+      document.getElementById('tableMeta').textContent = 'Updated ' + (data.updated ? new Date(data.updated).toLocaleString() : 'recently') + ' · top 4 in blue, bottom 3 in red';
+    })
+    .catch(function () { document.getElementById('tableMeta').textContent = 'Tables are unavailable right now. Please check back soon.'; });
+
   // news: loads news.json, refreshes itself every 5 minutes, filters by league
   var current = [], activeLeague = 'All';
   var filters = document.getElementById('newsFilters');
