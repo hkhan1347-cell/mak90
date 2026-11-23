@@ -215,7 +215,7 @@
   // tabs: show one group of panels at a time, remembering the last tab in the URL hash
   var tabs = document.querySelectorAll('[data-tab]');
   function show(name) {
-    if (!/^(home|news|play)$/.test(name)) name = 'home';
+    if (!/^(home|news|play)$/.test(name)) name = 'news';
     document.querySelectorAll('[data-panel]').forEach(function (p) {
       p.classList.toggle('show', p.getAttribute('data-panel') === name);
     });
@@ -232,7 +232,7 @@
       show(name);
     });
   });
-  show((location.hash || '#home').slice(1));
+  show((location.hash || '#news').slice(1));
 
   var list = document.getElementById('newsList');
   var meta = document.getElementById('newsMeta');
