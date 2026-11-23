@@ -74,6 +74,9 @@
   .news{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:6px;color:var(--text)}
   .news:hover{border-color:var(--gold)}
   .news{cursor:pointer}
+  .thumb{position:relative;overflow:hidden;border-radius:10px;height:150px;margin:-4px -4px 10px;display:flex;align-items:flex-end;padding:12px}
+  .thumb img{position:absolute;right:-18px;top:-18px;width:130px;height:130px;object-fit:cover;border-radius:50%;opacity:.22}
+  .thumb span{position:relative;font:800 13px system-ui,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.35);padding:5px 10px;border-radius:6px}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin:-8px 0 22px}
   .chip{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:6px 14px;font:600 13px system-ui,sans-serif;cursor:pointer}
   .chip:hover{border-color:var(--blue);color:var(--blue)}
@@ -341,11 +344,24 @@
       return '<button class="chip' + (l === activeLeague ? ' on' : '') + '" data-league="' + esc(l) + '">' + esc(l) + '</button>';
     }).join('');
   }
+  var LEAGUE_COLORS = {
+    'Premier League': ['#3d0a4f','#c2185b'], 'LaLiga': ['#7a1020','#ff6b00'], 'Serie A': ['#0a2a6e','#1f6feb'],
+    'Bundesliga': ['#4a0a0a','#d32f2f'], 'Ligue 1': ['#0b3b2e','#00a86b'], 'Champions League': ['#06173f','#1f4fd6'],
+    'Europa League': ['#3d2400','#ff8c00'], 'Transfers': ['#1a1a2e','#f5b82e'], 'Other': ['#0a2a8a','#1f4fd6']
+  };
+  function leagueGradient(l) {
+    var c = LEAGUE_COLORS[l] || LEAGUE_COLORS.Other;
+    return 'linear-gradient(135deg,' + c[0] + ',' + c[1] + ')';
+  }
   function renderNews() {
     var items = current.filter(function (i) { return activeLeague === 'All' || (i.league || 'Other') === activeLeague; });
     list.innerHTML = items.length ? items.map(function (it) {
       var idx = current.indexOf(it);
       return '<article class="news" role="button" tabindex="0" data-idx="' + idx + '">' +
+        '<div class="thumb" style="background:' + leagueGradient(it.league) + '">' +
+          '<img src="logo.jpg" alt="" onerror="this.remove()">' +
+          '<span>' + esc(it.league || 'Football') + '</span>' +
+        '</div>' +
         '<span class="lg">' + esc(it.league || 'Football') + '</span>' +
         '<span class="ttl">' + esc(it.title) + '</span>' +
         '<span class="sum">' + esc(it.summary) + '</span>' +
