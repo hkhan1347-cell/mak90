@@ -3,26 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Keepy Uppy | MAK90+</title>
+<title>Keepy Uppy 3D | MAK90+</title>
 <style>
-  html,body{margin:0;height:100%;background:linear-gradient(#0a2a8a,#071a5c);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:none;user-select:none}
-  canvas{display:block;width:100%;height:100%}
+  html,body{margin:0;height:100%;background:#0a2a8a;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:none;user-select:none}
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block}
   .hud{position:fixed;top:14px;left:0;right:0;text-align:center;pointer-events:none}
-  .score{font-size:64px;font-weight:900;text-shadow:0 4px 18px rgba(0,0,0,.35)}
+  .score{font-size:64px;font-weight:900;text-shadow:0 4px 18px rgba(0,0,0,.45)}
   .best{font-size:14px;letter-spacing:1.5px;text-transform:uppercase;color:#f5b82e;font-weight:700}
-  .msg{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px}
+  .hint{position:fixed;bottom:18px;left:0;right:0;text-align:center;font-size:14px;color:#c9d6ee;pointer-events:none}
+  .msg{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px;background:rgba(5,12,40,.45)}
   .msg h1{margin:0;font-size:40px;font-weight:900;letter-spacing:-.5px}
-  .msg p{margin:0;color:#c9d6ee;font-size:17px;max-width:360px}
+  .msg p{margin:0;color:#dfe8ff;font-size:17px;max-width:380px}
   .msg button{margin-top:10px;background:#f5b82e;color:#0a1a4a;border:0;border-radius:10px;padding:14px 30px;font:800 17px system-ui,sans-serif;cursor:pointer}
   .hidden{display:none}
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
+<canvas id="gl"></canvas>
 <div class="hud"><div class="score" id="score">0</div><div class="best" id="best">Best 0</div></div>
+<div class="hint" id="hint">Tap when the ball is in the gold ring</div>
 <div class="msg" id="menu">
-  <h1>Keepy Uppy</h1>
-  <p>Tap the ball to keep it up. Tap as it falls, aim with the tap position, and don't let it hit the grass.</p>
+  <h1>Keepy Uppy 3D</h1>
+  <p>Your footballer is ready. Tap when the ball reaches the gold ring at his feet, or his head, to keep it up. Don't let it touch the pitch.</p>
   <button id="start">Play</button>
 </div>
 <div class="msg hidden" id="over">
@@ -30,100 +32,154 @@
   <p id="final"></p>
   <button id="again">Play again</button>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function () {
-  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
-  var W, H, ball, score, best = 0, state = 'menu', particles = [];
-  try { best = +localStorage.getItem('ku_best') || 0; } catch (e) {}
-  document.getElementById('best').textContent = 'Best ' + best;
+  var best = 0;
+  try { best = +localStorage.getItem('ku3_best') || 0; } catch (e) {}
+  var scoreEl = document.getElementById('score'), bestEl = document.getElementById('best');
+  bestEl.textContent = 'Best ' + best;
+
+  // ---- renderer / scene ----
+  var renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl'), antialias: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  renderer.shadowMap.enabled = true;
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a2a8a);
+  scene.fog = new THREE.Fog(0x0a2a8a, 14, 30);
+  var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.set(0, 2.6, 7.5);
+  camera.lookAt(0, 1.6, 0);
 
   function resize() {
-    var dpr = window.devicePixelRatio || 1;
-    W = window.innerWidth; H = window.innerHeight;
-    cv.width = W * dpr; cv.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
   }
   window.addEventListener('resize', resize); resize();
 
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x2e6b2e, 0.9));
+  var sun = new THREE.DirectionalLight(0xffffff, 0.8);
+  sun.position.set(3, 8, 5); sun.castShadow = true; scene.add(sun);
+
+  // pitch with stripes
+  var stripeCanvas = document.createElement('canvas'); stripeCanvas.width = 256; stripeCanvas.height = 256;
+  var sc = stripeCanvas.getContext('2d');
+  for (var i = 0; i < 8; i++) { sc.fillStyle = i % 2 ? '#2e8b3e' : '#278036'; sc.fillRect(0, i * 32, 256, 32); }
+  var grassTex = new THREE.CanvasTexture(stripeCanvas); grassTex.wrapS = grassTex.wrapT = THREE.RepeatWrapping; grassTex.repeat.set(6, 6);
+  var pitch = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshLambertMaterial({ map: grassTex }));
+  pitch.rotation.x = -Math.PI / 2; pitch.receiveShadow = true; scene.add(pitch);
+
+  // ---- footballer ----
+  var player = new THREE.Group(); scene.add(player);
+  function mat(c) { return new THREE.MeshLambertMaterial({ color: c }); }
+  var shirt = mat(0x1d5fd6), shorts = mat(0x0a1a4a), skin = mat(0xc68642), sock = mat(0xffffff), boot = mat(0x111111), hair = mat(0x1a1210);
+  function add(parent, geo, m, x, y, z) { var o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = true; parent.add(o); return o; }
+
+  var body = new THREE.Group(); body.position.y = 0; player.add(body);
+  add(body, new THREE.CylinderGeometry(0.42, 0.36, 0.9, 16), shirt, 0, 1.45, 0);          // torso
+  add(body, new THREE.SphereGeometry(0.34, 16, 12), skin, 0, 2.2, 0);                      // head
+  add(body, new THREE.SphereGeometry(0.36, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2.2), hair, 0, 2.26, -0.02); // hair
+  add(body, new THREE.CylinderGeometry(0.1, 0.1, 0.9, 10), skin, -0.62, 1.4, 0);           // arms
+  add(body, new THREE.CylinderGeometry(0.1, 0.1, 0.9, 10), skin, 0.62, 1.4, 0);
+  add(body, new THREE.CylinderGeometry(0.42, 0.4, 0.45, 16), shorts, 0, 0.82, 0);           // shorts
+
+  // legs: pivot at the hip so the right leg can swing forward
+  function leg(x, isKick) {
+    var pivot = new THREE.Group(); pivot.position.set(x, 0.85, 0); body.add(pivot);
+    add(pivot, new THREE.CylinderGeometry(0.16, 0.13, 0.85, 10), shorts, 0, -0.42, 0);
+    add(pivot, new THREE.CylinderGeometry(0.13, 0.12, 0.55, 10), sock, 0, -1.1, 0);
+    add(pivot, new THREE.BoxGeometry(0.22, 0.16, 0.42), boot, 0, -1.42, 0.1);
+    return pivot;
+  }
+  var legL = leg(-0.2, false), legR = leg(0.2, true);
+  player.position.set(0, 0, 0);
+
+  // ---- ball ----
+  var bc = document.createElement('canvas'); bc.width = 256; bc.height = 256;
+  var bx = bc.getContext('2d');
+  bx.fillStyle = '#fff'; bx.fillRect(0, 0, 256, 256);
+  bx.fillStyle = '#0a1a4a';
+  for (var k = 0; k < 10; k++) { var a = k * Math.PI / 5; bx.beginPath(); bx.arc(128 + Math.cos(a) * 110, 128 + Math.sin(a) * 110, 34, 0, 7); bx.fill(); }
+  bx.beginPath(); bx.arc(128, 128, 52, 0, 7); bx.fill();
+  var ball = new THREE.Mesh(new THREE.SphereGeometry(0.22, 24, 18), new THREE.MeshLambertMaterial({ map: new THREE.CanvasTexture(bc) }));
+  ball.castShadow = true; scene.add(ball);
+
+  // gold rings: the kick zone (feet) and header zone (head)
+  var ringFoot = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.62, 32), new THREE.MeshBasicMaterial({ color: 0xf5b82e, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
+  ringFoot.position.set(0.25, 0.9, 0.9); ringFoot.rotation.x = -0.4; scene.add(ringFoot);
+  var ringHead = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.62, 32), new THREE.MeshBasicMaterial({ color: 0xf5b82e, transparent: true, opacity: 0.6, side: THREE.DoubleSide }));
+  ringHead.position.set(0, 2.9, 0.4); ringHead.rotation.x = -0.2; scene.add(ringHead);
+  var footPoint = new THREE.Vector3(0.25, 0.9, 0.9), headPoint = new THREE.Vector3(0, 2.9, 0.4);
+
+  // ---- game state ----
+  var G = 9.8, ballR = 0.22, state = 'menu', score = 0, pos = new THREE.Vector3(), vel = new THREE.Vector3();
+  var kickT = -1, headT = -1;
   function reset() {
-    ball = { x: W / 2, y: H * 0.45, vx: 0, vy: -8, r: Math.max(22, Math.min(W, H) * 0.05), spin: 0 };
-    score = 0; particles = [];
-    document.getElementById('score').textContent = '0';
+    pos.set(0, 3.2, 0); vel.set(0.6, 0, 0.2);
+    score = 0; scoreEl.textContent = '0'; kickT = -1; headT = -1;
   }
-
-  function kick(px, py) {
-    var dx = ball.x - px, dy = ball.y - py;
-    var d = Math.hypot(dx, dy);
-    if (d > ball.r * 2.2) return false;           // only taps near the ball count
-    var power = Math.min(16, 9 + Math.random() * 3);
-    ball.vy = -power;
-    ball.vx = Math.max(-7, Math.min(7, dx * 0.15)) + (Math.random() - 0.5) * 2;
-    score++;
-    document.getElementById('score').textContent = score;
-    for (var i = 0; i < 10; i++) particles.push({ x: ball.x, y: ball.y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 1 });
-    return true;
+  function kickBall(strength) {
+    vel.y = strength;
+    vel.x = (Math.random() - 0.5) * 2.2 + (pos.x > 0 ? -0.6 : 0.6) * 0; 
+    vel.z = (Math.random() - 0.5) * 1.2;
+    score++; scoreEl.textContent = score;
   }
-
-  function start() { reset(); state = 'play'; document.getElementById('menu').classList.add('hidden'); document.getElementById('over').classList.add('hidden'); }
+  function tap() {
+    if (state !== 'play') return;
+    var dFoot = pos.distanceTo(footPoint), dHead = pos.distanceTo(headPoint);
+    if (dFoot < 1.1) { kickT = 0; kickBall(7.2 + Math.random() * 1.2); }
+    else if (dHead < 1.1) { headT = 0; kickBall(6.4 + Math.random() * 1.0); }
+  }
+  function start() {
+    reset(); state = 'play';
+    document.getElementById('menu').classList.add('hidden');
+    document.getElementById('over').classList.add('hidden');
+  }
   function end() {
     state = 'over';
-    if (score > best) { best = score; try { localStorage.setItem('ku_best', best); } catch (e) {} }
-    document.getElementById('best').textContent = 'Best ' + best;
+    if (score > best) { best = score; try { localStorage.setItem('ku3_best', best); } catch (e) {} }
+    bestEl.textContent = 'Best ' + best;
     document.getElementById('final').textContent = 'You kept it up ' + score + ' times. Best: ' + best + '.';
     document.getElementById('over').classList.remove('hidden');
   }
-
-  function pointer(e) {
-    if (state !== 'play') return;
-    var t = e.touches ? e.touches[0] : e;
-    if (t) kick(t.clientX, t.clientY);
-  }
-  cv.addEventListener('pointerdown', function (e) { e.preventDefault(); pointer(e); });
+  renderer.domElement.addEventListener('pointerdown', function (e) { e.preventDefault(); tap(); });
   document.getElementById('start').addEventListener('click', start);
   document.getElementById('again').addEventListener('click', start);
 
+  // ---- loop ----
   var last = performance.now();
   function frame(now) {
-    var dt = Math.min(33, now - last) / 16.67; last = now;
-    ctx.clearRect(0, 0, W, H);
-    // pitch stripes
-    ctx.fillStyle = 'rgba(255,255,255,.04)';
-    for (var s = 0; s < 8; s++) if (s % 2) ctx.fillRect(0, s * H / 8, W, H / 8);
-    // grass
-    var g = ctx.createLinearGradient(0, H - 70, 0, H);
-    g.addColorStop(0, '#2e8b3e'); g.addColorStop(1, '#14531f');
-    ctx.fillStyle = g; ctx.fillRect(0, H - 70, W, 70);
-
+    var dt = Math.min(0.033, (now - last) / 1000); last = now;
     if (state === 'play') {
-      ball.vy += 0.38 * dt; ball.x += ball.vx * dt; ball.y += ball.vy * dt; ball.spin += ball.vx * 0.05 * dt;
-      if (ball.x < ball.r) { ball.x = ball.r; ball.vx = Math.abs(ball.vx) * 0.8; }
-      if (ball.x > W - ball.r) { ball.x = W - ball.r; ball.vx = -Math.abs(ball.vx) * 0.8; }
-      if (ball.y < ball.r) { ball.y = ball.r; ball.vy = Math.abs(ball.vy) * 0.3; }
-      if (ball.y + ball.r > H - 70) { end(); }
+      vel.y -= G * dt;
+      pos.addScaledVector(vel, dt);
+      if (pos.x < -2.4) { pos.x = -2.4; vel.x = Math.abs(vel.x) * 0.8; }
+      if (pos.x > 2.4) { pos.x = 2.4; vel.x = -Math.abs(vel.x) * 0.8; }
+      pos.z = Math.max(-1.5, Math.min(1.8, pos.z));
+      if (pos.y < ballR) { end(); pos.y = ballR; }
     }
-    // particles
-    particles.forEach(function (p) { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.04 * dt; });
-    particles = particles.filter(function (p) { return p.life > 0; });
-    particles.forEach(function (p) { ctx.globalAlpha = p.life; ctx.fillStyle = '#f5b82e'; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, 7); ctx.fill(); });
-    ctx.globalAlpha = 1;
+    ball.position.copy(pos);
+    ball.rotation.x += vel.z * dt * 2; ball.rotation.z -= vel.x * dt * 2;
 
-    if (ball) drawBall();
+    // kick and header animations
+    if (kickT >= 0) { kickT += dt * 3.2; legR.rotation.x = -Math.sin(Math.min(kickT, 1) * Math.PI) * 1.4; if (kickT >= 1) kickT = -1; }
+    else legR.rotation.x = 0;
+    if (headT >= 0) { headT += dt * 2.6; body.rotation.x = -Math.sin(Math.min(headT, 1) * Math.PI) * 0.25; if (headT >= 1) headT = -1; }
+    else body.rotation.x = 0;
+    legL.rotation.x = Math.sin(now / 400) * 0.05;
+
+    // rings pulse when the ball is close
+    var near = Math.min(pos.distanceTo(footPoint), pos.distanceTo(headPoint));
+    var glow = near < 1.1 ? 1 : 0.35;
+    ringFoot.material.opacity = ringHead.material.opacity = glow;
+    ringFoot.scale.setScalar(near < 1.1 ? 1.15 : 1);
+    ringHead.scale.setScalar(near < 1.1 ? 1.15 : 1);
+
+    renderer.render(scene, camera);
     requestAnimationFrame(frame);
   }
-
-  function drawBall() {
-    var r = ball.r;
-    ctx.save(); ctx.translate(ball.x, ball.y); ctx.rotate(ball.spin);
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill();
-    ctx.fillStyle = '#0a1a4a';
-    for (var k = 0; k < 5; k++) {
-      var a = k * Math.PI * 2 / 5 - Math.PI / 2;
-      ctx.beginPath(); ctx.arc(Math.cos(a) * r * 0.5, Math.sin(a) * r * 0.5, r * 0.28, 0, 7); ctx.fill();
-    }
-    ctx.strokeStyle = '#f5b82e'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, r - 1.5, 0, 7); ctx.stroke();
-    ctx.restore();
-  }
-
+  reset();
   requestAnimationFrame(frame);
 })();
 </script>
