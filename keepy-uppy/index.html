@@ -20,6 +20,7 @@
 </head>
 <body>
 <canvas id="gl"></canvas>
+<div style="position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 45%,rgba(0,0,20,.55) 100%)"></div>
 <div class="hud"><div class="score" id="score">0</div><div class="best" id="best">Best 0</div></div>
 <div class="hint">Tap when the ball is close to his feet, chest, shoulders or head</div>
 <div class="msg" id="menu">
@@ -48,8 +49,8 @@
   scene.background = new THREE.Color(0x0a2a8a);
   scene.fog = new THREE.Fog(0x0a2a8a, 14, 30);
   var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-  camera.position.set(0, 2.3, 5.6);
-  camera.lookAt(0, 1.5, 0);
+  camera.position.set(0, 1.45, 5.0);
+  camera.lookAt(0, 1.35, 0);
 
   function resize() {
     renderer.setSize(window.innerWidth, window.innerHeight, false);
@@ -61,6 +62,9 @@
   scene.add(new THREE.HemisphereLight(0xffffff, 0x2e6b2e, 1.1));
   var sun = new THREE.DirectionalLight(0xffffff, 1.1);
   sun.position.set(3, 8, 5); sun.castShadow = true; scene.add(sun);
+  var spot = new THREE.SpotLight(0xffffff, 0.8, 30, Math.PI / 6, 0.6, 1.2);
+  spot.position.set(0, 9, 4); spot.target.position.set(0, 1.2, 0); spot.castShadow = true;
+  scene.add(spot); scene.add(spot.target);
 
   // pitch with stripes
   var stripeCanvas = document.createElement('canvas'); stripeCanvas.width = 256; stripeCanvas.height = 256;
@@ -78,19 +82,21 @@
   var kitC = document.createElement('canvas'); kitC.width = 256; kitC.height = 256;
   var kx = kitC.getContext('2d');
   kx.fillStyle = '#7fd3e6'; kx.fillRect(0, 0, 256, 256);
-  kx.fillStyle = 'rgba(255,255,255,.55)'; kx.fillRect(0, 0, 256, 18); kx.fillRect(0, 238, 256, 18);
+  kx.fillStyle = 'rgba(255,255,255,.22)';
+  for (var sx = -256; sx < 512; sx += 48) { kx.beginPath(); kx.moveTo(sx, 0); kx.lineTo(sx + 22, 0); kx.lineTo(sx + 22 + 256, 256); kx.lineTo(sx + 256, 256); kx.fill(); }
+  kx.fillStyle = 'rgba(255,255,255,.7)'; kx.fillRect(0, 0, 256, 16); kx.fillRect(0, 240, 256, 16);
   kx.fillStyle = '#0a1a4a'; kx.font = 'bold 150px Arial'; kx.textAlign = 'center'; kx.textBaseline = 'middle';
   kx.fillText('10', 128, 130);
   var kitTex = new THREE.CanvasTexture(kitC);
-  var shirt = new THREE.MeshStandardMaterial({ map: kitTex, roughness: 0.85 });
+  var shirt = new THREE.MeshStandardMaterial({ map: kitTex, roughness: 0.32, metalness: 0.08 });
   var shorts = std(0x0a1a4a, 0.8), skin = std(0x9c6b4a, 0.55), sock = std(0xffffff, 0.8), boot = std(0x141414, 0.35), hair = std(0x1a1210, 0.9);
   function add(parent, geo, m, x, y, z) { var o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = true; parent.add(o); return o; }
 
   var body = new THREE.Group(); player.add(body);
   // torso: tapered chest with rounded shoulders
-  add(body, new THREE.CylinderGeometry(0.46, 0.36, 0.95, 24), shirt, 0, 1.45, 0);
-  add(body, new THREE.SphereGeometry(0.2, 16, 12), shirt, -0.5, 1.8, 0);
-  add(body, new THREE.SphereGeometry(0.2, 16, 12), shirt, 0.5, 1.8, 0);
+  add(body, new THREE.CylinderGeometry(0.52, 0.33, 1.0, 24), shirt, 0, 1.45, 0);
+  add(body, new THREE.SphereGeometry(0.23, 16, 12), shirt, -0.56, 1.8, 0);
+  add(body, new THREE.SphereGeometry(0.23, 16, 12), shirt, 0.56, 1.8, 0);
   // neck and head
   add(body, new THREE.CylinderGeometry(0.13, 0.15, 0.2, 12), skin, 0, 1.98, 0);
   add(body, new THREE.SphereGeometry(0.31, 24, 18), skin, 0, 2.22, 0);
@@ -109,19 +115,20 @@
   faceMesh.position.set(0, 2.22, 0.2);
   body.add(faceMesh);
   // shorts
-  add(body, new THREE.CylinderGeometry(0.42, 0.4, 0.45, 24), shorts, 0, 0.8, 0);
+  add(body, new THREE.CylinderGeometry(0.46, 0.44, 0.45, 24), shorts, 0, 0.8, 0);
+  add(body, new THREE.CylinderGeometry(0.465, 0.465, 0.05, 24), std(0xffffff, 0.4), 0, 0.58, 0);
   // arms: upper arm, forearm, hand (hanging, relaxed)
   [-1, 1].forEach(function (sd) {
-    add(body, new THREE.CylinderGeometry(0.12, 0.1, 0.55, 14), shirt, sd * 0.6, 1.5, 0);
-    add(body, new THREE.CylinderGeometry(0.1, 0.085, 0.48, 14), skin, sd * 0.66, 1.0, 0.04);
+    add(body, new THREE.CylinderGeometry(0.14, 0.11, 0.55, 14), shirt, sd * 0.66, 1.5, 0);
+    add(body, new THREE.CylinderGeometry(0.11, 0.08, 0.48, 14), skin, sd * 0.7, 1.0, 0.04);
     add(body, new THREE.SphereGeometry(0.1, 12, 10), skin, sd * 0.68, 0.72, 0.06);
   });
 
   // legs: pivot at the hip so each foot can swing forward
   function leg(x) {
     var pivot = new THREE.Group(); pivot.position.set(x, 0.8, 0); body.add(pivot);
-    add(pivot, new THREE.CylinderGeometry(0.19, 0.15, 0.6, 16), skin, 0, -0.3, 0);   // thigh (skin shows below shorts)
-    add(pivot, new THREE.CylinderGeometry(0.15, 0.11, 0.55, 16), skin, 0, -0.9, 0);  // calf
+    add(pivot, new THREE.CylinderGeometry(0.22, 0.15, 0.6, 16), skin, 0, -0.3, 0);   // thigh (skin shows below shorts)
+    add(pivot, new THREE.CylinderGeometry(0.17, 0.11, 0.55, 16), skin, 0, -0.9, 0);  // calf
     add(pivot, new THREE.CylinderGeometry(0.15, 0.14, 0.32, 14), sock, 0, -0.9, 0.0); // sock over the calf
     add(pivot, new THREE.CylinderGeometry(0.14, 0.14, 0.06, 14), boot, 0, -0.4, 0.0);
     add(pivot, new THREE.SphereGeometry(0.14, 14, 10), boot, 0, -1.25, 0.0);
