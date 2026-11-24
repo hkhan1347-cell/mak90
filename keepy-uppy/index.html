@@ -114,7 +114,7 @@
     var g = fc.getContext('2d');
     // skin oval with soft shading so the face has depth
     var sk = g.createRadialGradient(130, 190, 30, 144, 200, 170);
-    sk.addColorStop(0, '#d89a6e'); sk.addColorStop(0.7, '#c98d63'); sk.addColorStop(1, 'rgba(201,141,99,0)');
+    sk.addColorStop(0, '#e2a77a'); sk.addColorStop(0.55, '#c98d63'); sk.addColorStop(0.85, '#a66a45'); sk.addColorStop(1, 'rgba(150,90,55,0)');
     g.fillStyle = sk; g.beginPath(); g.ellipse(144, 200, 136, 186, 0, 0, Math.PI * 2); g.fill();
     // eyes: almond shape, upper lid line, lashes, iris with depth
     function eye(x, y, flip) {
@@ -150,6 +150,20 @@
     g.fillStyle = '#c96a7a';
     g.beginPath(); g.moveTo(102, 278); g.quadraticCurveTo(144, 294, 186, 278); g.quadraticCurveTo(176, 312, 144, 316); g.quadraticCurveTo(112, 312, 102, 278); g.fill();
     g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.ellipse(134, 302, 12, 3, 0, 0, Math.PI * 2); g.fill();
+    // depth: nose-bridge and cheekbone highlights, under-eye and jaw shadows
+    function soft(x, y, rx, ry, col) {
+      var rg = g.createRadialGradient(x, y, 1, x, y, Math.max(rx, ry));
+      rg.addColorStop(0, col); rg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.save(); g.translate(x, y); g.scale(rx / Math.max(rx, ry), ry / Math.max(rx, ry)); g.translate(-x, -y);
+      g.fillStyle = rg; g.beginPath(); g.arc(x, y, Math.max(rx, ry), 0, Math.PI * 2); g.fill(); g.restore();
+    }
+    soft(144, 212, 14, 46, 'rgba(255,235,210,0.45)');      // nose bridge highlight
+    soft(104, 236, 26, 14, 'rgba(255,230,200,0.28)');      // left cheekbone
+    soft(184, 236, 26, 14, 'rgba(255,230,200,0.28)');      // right cheekbone
+    soft(96, 222, 30, 12, 'rgba(90,40,30,0.22)');          // under-eye shadow left
+    soft(192, 222, 30, 12, 'rgba(90,40,30,0.22)');         // under-eye shadow right
+    soft(144, 340, 90, 30, 'rgba(60,25,15,0.35)');         // jaw/chin shadow
+    soft(144, 160, 110, 26, 'rgba(60,30,20,0.12)');        // brow-ridge shade
     // smile lines and cheek blush
     g.strokeStyle = 'rgba(120,70,40,0.45)'; g.lineWidth = 3;
     g.beginPath(); g.moveTo(88, 270); g.quadraticCurveTo(80, 288, 96, 300); g.stroke();
@@ -166,7 +180,7 @@
     fp.setZ(vi, Math.sqrt(Math.max(0, rr * rr - fx * fx * 0.8 - fy * fy * 0.6)) - 0.2);
   }
   faceGeo.computeVertexNormals();
-  var faceMesh = new THREE.Mesh(faceGeo, new THREE.MeshStandardMaterial({ map: faceTex, transparent: true, alphaTest: 0.05, roughness: 0.8 }));
+  var faceMesh = new THREE.Mesh(faceGeo, new THREE.MeshStandardMaterial({ map: faceTex, transparent: true, alphaTest: 0.05, roughness: 0.5, metalness: 0 }));
   faceMesh.position.set(0, 2.2, 0.2);
   body.add(faceMesh);
   // shorts
