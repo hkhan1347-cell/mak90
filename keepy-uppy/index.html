@@ -112,24 +112,52 @@
   } else {
     var fc = document.createElement('canvas'); fc.width = 288; fc.height = 400;
     var g = fc.getContext('2d');
+    // skin oval with soft shading so the face has depth
+    var sk = g.createRadialGradient(130, 190, 30, 144, 200, 170);
+    sk.addColorStop(0, '#d89a6e'); sk.addColorStop(0.7, '#c98d63'); sk.addColorStop(1, 'rgba(201,141,99,0)');
+    g.fillStyle = sk; g.beginPath(); g.ellipse(144, 200, 136, 186, 0, 0, Math.PI * 2); g.fill();
+    // eyes: almond shape, upper lid line, lashes, iris with depth
     function eye(x, y, flip) {
-      g.fillStyle = '#ffffff'; g.strokeStyle = '#1a1a1a'; g.lineWidth = 6;
-      g.beginPath(); g.ellipse(x, y, 26, 32, 0, 0, Math.PI * 2); g.fill(); g.stroke();
-      g.fillStyle = '#1a1a1a'; g.beginPath(); g.arc(x + 4 * flip, y + 4, 14, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x - 2 * flip, y - 4, 5, 0, Math.PI * 2); g.fill();
+      g.save(); g.translate(x, y); g.scale(flip, 1);
+      g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(0, 0, 28, 22, 0, 0, Math.PI * 2); g.fill();
+      var iris = g.createRadialGradient(4, 2, 2, 4, 2, 17);
+      iris.addColorStop(0, '#6b3f1f'); iris.addColorStop(1, '#2a1608');
+      g.fillStyle = iris; g.beginPath(); g.arc(4, 2, 16, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#0c0a08'; g.beginPath(); g.arc(4, 2, 7, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#ffffff'; g.beginPath(); g.arc(-1, -4, 4.5, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#1a1210'; g.lineWidth = 6; g.beginPath(); g.ellipse(0, 0, 28, 22, 0, Math.PI * 1.05, Math.PI * 1.95); g.stroke();
+      g.lineWidth = 3; g.beginPath(); g.moveTo(-22, -10); g.quadraticCurveTo(0, -36, 24, -12); g.stroke();
+      g.beginPath(); g.moveTo(-22, -10); g.lineTo(-27, -18); g.moveTo(-8, -28); g.lineTo(-10, -36); g.moveTo(10, -28); g.lineTo(12, -35); g.stroke();
+      g.strokeStyle = 'rgba(40,25,15,0.45)'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(-26, -14); g.quadraticCurveTo(0, -30, 26, -16); g.stroke();
+      g.restore();
     }
-    eye(95, 190, 1); eye(193, 190, -1);
-    g.strokeStyle = '#2b1a10'; g.lineWidth = 11; g.lineCap = 'round';
-    g.beginPath(); g.moveTo(62, 136); g.quadraticCurveTo(95, 118, 124, 134); g.stroke();
-    g.beginPath(); g.moveTo(164, 134); g.quadraticCurveTo(193, 118, 226, 136); g.stroke();
-    g.lineWidth = 6; g.strokeStyle = '#8a5a3c';
-    g.beginPath(); g.moveTo(140, 230); g.quadraticCurveTo(152, 252, 144, 258); g.stroke();
-    g.fillStyle = '#7a2a2a'; g.strokeStyle = '#3a1010'; g.lineWidth = 5;
-    g.beginPath(); g.moveTo(104, 286); g.quadraticCurveTo(144, 300, 184, 286); g.quadraticCurveTo(144, 352, 104, 286); g.fill(); g.stroke();
-    g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(112, 290); g.quadraticCurveTo(144, 300, 176, 290); g.quadraticCurveTo(144, 306, 112, 290); g.fill();
-    g.fillStyle = 'rgba(255,110,110,0.45)';
-    g.beginPath(); g.arc(68, 255, 24, 0, Math.PI * 2); g.fill();
-    g.beginPath(); g.arc(220, 255, 24, 0, Math.PI * 2); g.fill();
+    eye(96, 190, 1); eye(192, 190, -1);
+    // brows: tapered, thicker at the inner end
+    g.fillStyle = '#2b1a10';
+    function brow(x1, y1, x2, y2, x3, y3) {
+      g.beginPath(); g.moveTo(x1, y1); g.quadraticCurveTo(x2, y2 - 12, x3, y3); g.quadraticCurveTo(x2, y2 - 6, x1, y1 + 4); g.fill();
+    }
+    brow(62, 150, 96, 128, 128, 140); brow(226, 150, 192, 128, 160, 140);
+    // nose: shaded side, soft nostrils
+    g.strokeStyle = 'rgba(120,70,40,0.55)'; g.lineWidth = 5; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(152, 200); g.quadraticCurveTo(160, 236, 144, 250); g.stroke();
+    g.fillStyle = 'rgba(90,45,25,0.5)';
+    g.beginPath(); g.ellipse(136, 252, 7, 4, 0, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.ellipse(152, 252, 7, 4, 0, 0, Math.PI * 2); g.fill();
+    // lips: upper and lower with highlight
+    g.fillStyle = '#b5566a';
+    g.beginPath(); g.moveTo(102, 278); g.quadraticCurveTo(124, 284, 144, 286); g.quadraticCurveTo(164, 284, 186, 278); g.quadraticCurveTo(144, 296, 102, 278); g.fill();
+    g.fillStyle = '#c96a7a';
+    g.beginPath(); g.moveTo(102, 278); g.quadraticCurveTo(144, 294, 186, 278); g.quadraticCurveTo(176, 312, 144, 316); g.quadraticCurveTo(112, 312, 102, 278); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.ellipse(134, 302, 12, 3, 0, 0, Math.PI * 2); g.fill();
+    // smile lines and cheek blush
+    g.strokeStyle = 'rgba(120,70,40,0.45)'; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(88, 270); g.quadraticCurveTo(80, 288, 96, 300); g.stroke();
+    g.beginPath(); g.moveTo(200, 270); g.quadraticCurveTo(208, 288, 192, 300); g.stroke();
+    var bl = g.createRadialGradient(0, 0, 2, 0, 0, 30);
+    bl.addColorStop(0, 'rgba(255,120,110,0.5)'); bl.addColorStop(1, 'rgba(255,120,110,0)');
+    g.save(); g.translate(72, 258); g.fillStyle = bl; g.beginPath(); g.arc(0, 0, 30, 0, Math.PI * 2); g.fill(); g.restore();
+    g.save(); g.translate(216, 258); g.fillStyle = bl; g.beginPath(); g.arc(0, 0, 30, 0, Math.PI * 2); g.fill(); g.restore();
     faceTex = new THREE.CanvasTexture(fc);
   }
   var faceGeo = new THREE.PlaneGeometry(0.72, 1.0, 16, 20), fp = faceGeo.attributes.position;
