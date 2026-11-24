@@ -73,12 +73,19 @@
   // ---- footballer ----
   var player = new THREE.Group(); scene.add(player);
   function mat(c) { return new THREE.MeshLambertMaterial({ color: c }); }
-  var shirt = mat(0x1d5fd6), shorts = mat(0x0a1a4a), skin = mat(0xc68642), sock = mat(0xffffff), boot = mat(0x111111), hair = mat(0x1a1210);
+  var shirt = mat(0x7fd3e6), shorts = mat(0x0a1a4a), skin = mat(0xc68642), sock = mat(0xffffff), boot = mat(0x111111), hair = mat(0x1a1210);
   function add(parent, geo, m, x, y, z) { var o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = true; parent.add(o); return o; }
 
   var body = new THREE.Group(); player.add(body);
   add(body, new THREE.CylinderGeometry(0.42, 0.36, 0.9, 16), shirt, 0, 1.45, 0);          // torso
   add(body, new THREE.SphereGeometry(0.34, 16, 12), skin, 0, 2.2, 0);                      // head
+  // face photo on the front of the head (the cap and beard are in the photo)
+  var faceTex = new THREE.TextureLoader().load('face.png');
+  faceTex.anisotropy = 4;
+  var faceMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.86), new THREE.MeshLambertMaterial({ map: faceTex, transparent: true }));
+  faceMesh.position.set(0, 2.2, 0.345);
+  body.add(faceMesh);
+
   add(body, new THREE.SphereGeometry(0.36, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2.2), hair, 0, 2.26, -0.02); // hair
   add(body, new THREE.CylinderGeometry(0.1, 0.1, 0.9, 10), skin, -0.62, 1.4, 0);           // arms
   add(body, new THREE.CylinderGeometry(0.1, 0.1, 0.9, 10), skin, 0.62, 1.4, 0);
