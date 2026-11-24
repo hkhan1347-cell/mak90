@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Keepy Uppy | MAK90+</title>
+<style>
+  html,body{margin:0;height:100%;background:linear-gradient(#0a2a8a,#071a5c);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:none;user-select:none}
+  canvas{display:block;width:100%;height:100%}
+  .hud{position:fixed;top:14px;left:0;right:0;text-align:center;pointer-events:none}
+  .score{font-size:64px;font-weight:900;text-shadow:0 4px 18px rgba(0,0,0,.35)}
+  .best{font-size:14px;letter-spacing:1.5px;text-transform:uppercase;color:#f5b82e;font-weight:700}
+  .msg{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px}
+  .msg h1{margin:0;font-size:40px;font-weight:900;letter-spacing:-.5px}
+  .msg p{margin:0;color:#c9d6ee;font-size:17px;max-width:360px}
+  .msg button{margin-top:10px;background:#f5b82e;color:#0a1a4a;border:0;border-radius:10px;padding:14px 30px;font:800 17px system-ui,sans-serif;cursor:pointer}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud"><div class="score" id="score">0</div><div class="best" id="best">Best 0</div></div>
+<div class="msg" id="menu">
+  <h1>Keepy Uppy</h1>
+  <p>Tap the ball to keep it up. Tap as it falls, aim with the tap position, and don't let it hit the grass.</p>
+  <button id="start">Play</button>
+</div>
+<div class="msg hidden" id="over">
+  <h1>Game over</h1>
+  <p id="final"></p>
+  <button id="again">Play again</button>
+</div>
+<script>
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var W, H, ball, score, best = 0, state = 'menu', particles = [];
+  try { best = +localStorage.getItem('ku_best') || 0; } catch (e) {}
+  document.getElementById('best').textContent = 'Best ' + best;
+
+  function resize() {
+    var dpr = window.devicePixelRatio || 1;
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resize); resize();
+
+  function reset() {
+    ball = { x: W / 2, y: H * 0.45, vx: 0, vy: -8, r: Math.max(22, Math.min(W, H) * 0.05), spin: 0 };
+    score = 0; particles = [];
+    document.getElementById('score').textContent = '0';
+  }
+
+  function kick(px, py) {
+    var dx = ball.x - px, dy = ball.y - py;
+    var d = Math.hypot(dx, dy);
+    if (d > ball.r * 2.2) return false;           // only taps near the ball count
+    var power = Math.min(16, 9 + Math.random() * 3);
+    ball.vy = -power;
+    ball.vx = Math.max(-7, Math.min(7, dx * 0.15)) + (Math.random() - 0.5) * 2;
+    score++;
+    document.getElementById('score').textContent = score;
+    for (var i = 0; i < 10; i++) particles.push({ x: ball.x, y: ball.y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 1 });
+    return true;
+  }
+
+  function start() { reset(); state = 'play'; document.getElementById('menu').classList.add('hidden'); document.getElementById('over').classList.add('hidden'); }
+  function end() {
+    state = 'over';
+    if (score > best) { best = score; try { localStorage.setItem('ku_best', best); } catch (e) {} }
+    document.getElementById('best').textContent = 'Best ' + best;
+    document.getElementById('final').textContent = 'You kept it up ' + score + ' times. Best: ' + best + '.';
+    document.getElementById('over').classList.remove('hidden');
+  }
+
+  function pointer(e) {
+    if (state !== 'play') return;
+    var t = e.touches ? e.touches[0] : e;
+    if (t) kick(t.clientX, t.clientY);
+  }
+  cv.addEventListener('pointerdown', function (e) { e.preventDefault(); pointer(e); });
+  document.getElementById('start').addEventListener('click', start);
+  document.getElementById('again').addEventListener('click', start);
+
+  var last = performance.now();
+  function frame(now) {
+    var dt = Math.min(33, now - last) / 16.67; last = now;
+    ctx.clearRect(0, 0, W, H);
+    // pitch stripes
+    ctx.fillStyle = 'rgba(255,255,255,.04)';
+    for (var s = 0; s < 8; s++) if (s % 2) ctx.fillRect(0, s * H / 8, W, H / 8);
+    // grass
+    var g = ctx.createLinearGradient(0, H - 70, 0, H);
+    g.addColorStop(0, '#2e8b3e'); g.addColorStop(1, '#14531f');
+    ctx.fillStyle = g; ctx.fillRect(0, H - 70, W, 70);
+
+    if (state === 'play') {
+      ball.vy += 0.38 * dt; ball.x += ball.vx * dt; ball.y += ball.vy * dt; ball.spin += ball.vx * 0.05 * dt;
+      if (ball.x < ball.r) { ball.x = ball.r; ball.vx = Math.abs(ball.vx) * 0.8; }
+      if (ball.x > W - ball.r) { ball.x = W - ball.r; ball.vx = -Math.abs(ball.vx) * 0.8; }
+      if (ball.y < ball.r) { ball.y = ball.r; ball.vy = Math.abs(ball.vy) * 0.3; }
+      if (ball.y + ball.r > H - 70) { end(); }
+    }
+    // particles
+    particles.forEach(function (p) { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.04 * dt; });
+    particles = particles.filter(function (p) { return p.life > 0; });
+    particles.forEach(function (p) { ctx.globalAlpha = p.life; ctx.fillStyle = '#f5b82e'; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, 7); ctx.fill(); });
+    ctx.globalAlpha = 1;
+
+    if (ball) drawBall();
+    requestAnimationFrame(frame);
+  }
+
+  function drawBall() {
+    var r = ball.r;
+    ctx.save(); ctx.translate(ball.x, ball.y); ctx.rotate(ball.spin);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill();
+    ctx.fillStyle = '#0a1a4a';
+    for (var k = 0; k < 5; k++) {
+      var a = k * Math.PI * 2 / 5 - Math.PI / 2;
+      ctx.beginPath(); ctx.arc(Math.cos(a) * r * 0.5, Math.sin(a) * r * 0.5, r * 0.28, 0, 7); ctx.fill();
+    }
+    ctx.strokeStyle = '#f5b82e'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, r - 1.5, 0, 7); ctx.stroke();
+    ctx.restore();
+  }
+
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
