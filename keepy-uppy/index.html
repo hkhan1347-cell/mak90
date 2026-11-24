@@ -49,8 +49,8 @@
   scene.background = new THREE.Color(0x0a2a8a);
   scene.fog = new THREE.Fog(0x0a2a8a, 14, 30);
   var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-  camera.position.set(0, 1.45, 5.0);
-  camera.lookAt(0, 1.35, 0);
+  camera.position.set(0, 1.5, 5.4);
+  camera.lookAt(0, 1.4, 0);
 
   function resize() {
     renderer.setSize(window.innerWidth, window.innerHeight, false);
@@ -74,78 +74,72 @@
   var pitch = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshLambertMaterial({ map: grassTex }));
   pitch.rotation.x = -Math.PI / 2; pitch.receiveShadow = true; scene.add(pitch);
 
-  // ---- footballer ----
+  // ---- footballer (stylised, big-head proportions) ----
   var player = new THREE.Group(); scene.add(player);
   function std(c, r) { return new THREE.MeshStandardMaterial({ color: c, roughness: r === undefined ? 0.7 : r, metalness: 0 }); }
-
-  // kit texture: light blue shirt with white trim and the number 10 on the back panel
-  var kitC = document.createElement('canvas'); kitC.width = 256; kitC.height = 256;
-  var kx = kitC.getContext('2d');
-  kx.fillStyle = '#7fd3e6'; kx.fillRect(0, 0, 256, 256);
-  kx.fillStyle = 'rgba(255,255,255,.22)';
-  for (var sx = -256; sx < 512; sx += 48) { kx.beginPath(); kx.moveTo(sx, 0); kx.lineTo(sx + 22, 0); kx.lineTo(sx + 22 + 256, 256); kx.lineTo(sx + 256, 256); kx.fill(); }
-  kx.fillStyle = 'rgba(255,255,255,.7)'; kx.fillRect(0, 0, 256, 16); kx.fillRect(0, 240, 256, 16);
-  kx.fillStyle = '#0a1a4a'; kx.font = 'bold 150px Arial'; kx.textAlign = 'center'; kx.textBaseline = 'middle';
-  kx.fillText('10', 128, 130);
-  var kitTex = new THREE.CanvasTexture(kitC);
-  var shirt = new THREE.MeshStandardMaterial({ map: kitTex, roughness: 0.32, metalness: 0.08 });
-  var shorts = std(0x0a1a4a, 0.8), skin = std(0x9c6b4a, 0.55), sock = std(0xffffff, 0.8), boot = std(0x141414, 0.35), hair = std(0x1a1210, 0.9);
   function add(parent, geo, m, x, y, z) { var o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = true; parent.add(o); return o; }
 
+  var NAVY = 0x1c2d6b, WHITE = 0xffffff, SKIN = std(0xc98d63, 0.55);
+  var shirt = std(NAVY, 0.45), trim = std(WHITE, 0.4), shorts = std(WHITE, 0.45), sockNavy = std(NAVY, 0.5);
+  var boot = std(0x5a6066, 0.35), bootSole = std(0x1a1a1a, 0.5), hair = std(0x3b2414, 0.85);
+
   var body = new THREE.Group(); player.add(body);
-  // torso: tapered chest with rounded shoulders
-  add(body, new THREE.CylinderGeometry(0.52, 0.33, 1.0, 24), shirt, 0, 1.45, 0);
-  add(body, new THREE.SphereGeometry(0.23, 16, 12), shirt, -0.56, 1.8, 0);
-  add(body, new THREE.SphereGeometry(0.23, 16, 12), shirt, 0.56, 1.8, 0);
-  // neck and head
-  add(body, new THREE.CylinderGeometry(0.13, 0.15, 0.2, 12), skin, 0, 1.98, 0);
-  add(body, new THREE.SphereGeometry(0.31, 24, 18), skin, 0, 2.22, 0);
-  add(body, new THREE.SphereGeometry(0.33, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2.4), hair, 0, 2.3, -0.02);
-  // face photo on the front of the head (cap and beard are in the photo)
+  // torso: short V-neck jersey
+  add(body, new THREE.CylinderGeometry(0.36, 0.28, 0.8, 24), shirt, 0, 1.4, 0);
+  // white V-neck trim (thin ring)
+  add(body, new THREE.TorusGeometry(0.2, 0.02, 8, 24, Math.PI), trim, 0, 1.78, 0.28).rotation.set(0, 0, Math.PI);
+  // shoulders
+  add(body, new THREE.SphereGeometry(0.16, 16, 12), shirt, -0.36, 1.7, 0);
+  add(body, new THREE.SphereGeometry(0.16, 16, 12), shirt, 0.36, 1.7, 0);
+  // neck
+  add(body, new THREE.CylinderGeometry(0.14, 0.16, 0.14, 12), SKIN, 0, 1.86, 0);
+  // big stylised head
+  add(body, new THREE.SphereGeometry(0.45, 28, 20), SKIN, 0, 2.2, 0);
+  add(body, new THREE.SphereGeometry(0.47, 24, 14, 0, Math.PI * 2, 0, Math.PI / 2.3), hair, 0, 2.27, -0.02);
+  // ears
+  add(body, new THREE.SphereGeometry(0.08, 10, 8), SKIN, -0.44, 2.2, 0);
+  add(body, new THREE.SphereGeometry(0.08, 10, 8), SKIN, 0.44, 2.2, 0);
+  // face photo curved onto the head (the cap and beard are in the photo)
   var faceTex = new THREE.TextureLoader().load('face.png');
-  // curve the face plane to follow the head so it reads as a face, not a sticker
-  var faceGeo = new THREE.PlaneGeometry(0.62, 0.86, 16, 20), fp = faceGeo.attributes.position;
+  var faceGeo = new THREE.PlaneGeometry(0.72, 1.0, 16, 20), fp = faceGeo.attributes.position;
   for (var vi = 0; vi < fp.count; vi++) {
-    var fx = fp.getX(vi), fy = fp.getY(vi), rr = 0.33;
-    var fz = Math.sqrt(Math.max(0, rr * rr - fx * fx * 0.8 - fy * fy * 0.6));
-    fp.setZ(vi, fz - 0.2);
+    var fx = fp.getX(vi), fy = fp.getY(vi), rr = 0.46;
+    fp.setZ(vi, Math.sqrt(Math.max(0, rr * rr - fx * fx * 0.8 - fy * fy * 0.6)) - 0.2);
   }
   faceGeo.computeVertexNormals();
   var faceMesh = new THREE.Mesh(faceGeo, new THREE.MeshStandardMaterial({ map: faceTex, transparent: true, alphaTest: 0.05, roughness: 0.8 }));
-  faceMesh.position.set(0, 2.22, 0.2);
+  faceMesh.position.set(0, 2.2, 0.2);
   body.add(faceMesh);
   // shorts
-  add(body, new THREE.CylinderGeometry(0.46, 0.44, 0.45, 24), shorts, 0, 0.8, 0);
-  add(body, new THREE.CylinderGeometry(0.465, 0.465, 0.05, 24), std(0xffffff, 0.4), 0, 0.58, 0);
-  // arms: upper arm, forearm, hand (hanging, relaxed)
+  add(body, new THREE.CylinderGeometry(0.38, 0.36, 0.34, 24), shorts, 0, 0.92, 0);
+  // arms: short and rounded
   [-1, 1].forEach(function (sd) {
-    add(body, new THREE.CylinderGeometry(0.14, 0.11, 0.55, 14), shirt, sd * 0.66, 1.5, 0);
-    add(body, new THREE.CylinderGeometry(0.11, 0.08, 0.48, 14), skin, sd * 0.7, 1.0, 0.04);
-    add(body, new THREE.SphereGeometry(0.1, 12, 10), skin, sd * 0.68, 0.72, 0.06);
+    add(body, new THREE.CylinderGeometry(0.1, 0.085, 0.42, 14), shirt, sd * 0.44, 1.38, 0);      // short sleeve
+    add(body, new THREE.CylinderGeometry(0.08, 0.07, 0.36, 14), SKIN, sd * 0.46, 1.0, 0.02);     // forearm
+    add(body, new THREE.SphereGeometry(0.09, 12, 10), SKIN, sd * 0.47, 0.78, 0.04);              // hand
   });
 
-  // legs: pivot at the hip so each foot can swing forward
+  // legs: hip pivot; foot touches the ground at pivot.y - 0.7
   function leg(x) {
-    var pivot = new THREE.Group(); pivot.position.set(x, 0.8, 0); body.add(pivot);
-    add(pivot, new THREE.CylinderGeometry(0.22, 0.15, 0.6, 16), skin, 0, -0.3, 0);   // thigh (skin shows below shorts)
-    add(pivot, new THREE.CylinderGeometry(0.17, 0.11, 0.55, 16), skin, 0, -0.9, 0);  // calf
-    add(pivot, new THREE.CylinderGeometry(0.15, 0.14, 0.32, 14), sock, 0, -0.9, 0.0); // sock over the calf
-    add(pivot, new THREE.CylinderGeometry(0.14, 0.14, 0.06, 14), boot, 0, -0.4, 0.0);
-    add(pivot, new THREE.SphereGeometry(0.14, 14, 10), boot, 0, -1.25, 0.0);
-    add(pivot, new THREE.BoxGeometry(0.24, 0.14, 0.44), boot, 0, -1.28, 0.12);      // boot
-    add(pivot, new THREE.BoxGeometry(0.25, 0.04, 0.45), std(0xffffff, 0.4), 0, -1.36, 0.12); // white sole
+    var pivot = new THREE.Group(); pivot.position.set(x, 0.7, 0); body.add(pivot);
+    add(pivot, new THREE.CylinderGeometry(0.13, 0.11, 0.3, 16), SKIN, 0, -0.14, 0);          // thigh below shorts
+    add(pivot, new THREE.CylinderGeometry(0.12, 0.09, 0.3, 16), sockNavy, 0, -0.38, 0);      // sock
+    add(pivot, new THREE.CylinderGeometry(0.125, 0.125, 0.04, 16), trim, 0, -0.27, 0);        // white sock top
+    add(pivot, new THREE.CylinderGeometry(0.125, 0.125, 0.04, 16), trim, 0, -0.5, 0);         // white sock stripe
+    add(pivot, new THREE.BoxGeometry(0.2, 0.14, 0.36), boot, 0, -0.6, 0.08);                   // boot
+    add(pivot, new THREE.BoxGeometry(0.22, 0.05, 0.38), bootSole, 0, -0.69, 0.08);             // sole
     return pivot;
   }
-  var legL = leg(-0.22), legR = leg(0.22);
+  var legL = leg(-0.16), legR = leg(0.16);
 
   // body parts that can touch the ball (approximate world positions)
   var parts = {
-    footR:    { p: new THREE.Vector3( 0.25, 0.7, 0.8), type: 'foot',     leg: 'R', vy: [7.2, 8.4] },
-    footL:    { p: new THREE.Vector3(-0.25, 0.7, 0.8), type: 'foot',     leg: 'L', vy: [7.0, 8.0] },
-    chest:    { p: new THREE.Vector3( 0,    1.5, 0.5), type: 'chest',                vy: [6.8, 7.6] },
-    shoulderR:{ p: new THREE.Vector3( 0.6,  1.8, 0.3), type: 'shoulder', side:  1, vy: [6.8, 7.6] },
-    shoulderL:{ p: new THREE.Vector3(-0.6,  1.8, 0.3), type: 'shoulder', side: -1, vy: [6.8, 7.6] },
-    head:     { p: new THREE.Vector3( 0,    2.25, 0.3), type: 'head',                vy: [6.4, 7.4] }
+    footR:    { p: new THREE.Vector3( 0.16, 0.5, 0.55), type: 'foot',     leg: 'R', vy: [7.2, 8.4] },
+    footL:    { p: new THREE.Vector3(-0.16, 0.5, 0.55), type: 'foot',     leg: 'L', vy: [7.0, 8.0] },
+    chest:    { p: new THREE.Vector3( 0,    1.4, 0.35), type: 'chest',                vy: [6.8, 7.6] },
+    shoulderR:{ p: new THREE.Vector3( 0.36, 1.7, 0.1),  type: 'shoulder', side:  1, vy: [6.8, 7.6] },
+    shoulderL:{ p: new THREE.Vector3(-0.36, 1.7, 0.1),  type: 'shoulder', side: -1, vy: [6.8, 7.6] },
+    head:     { p: new THREE.Vector3( 0,    2.25, 0.35), type: 'head',                vy: [6.4, 7.4] }
   };
 
   // ---- ball ----
