@@ -97,8 +97,16 @@
   add(body, new THREE.SphereGeometry(0.33, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2.4), hair, 0, 2.3, -0.02);
   // face photo on the front of the head (cap and beard are in the photo)
   var faceTex = new THREE.TextureLoader().load('face.png');
-  var faceMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.86), new THREE.MeshStandardMaterial({ map: faceTex, transparent: true, alphaTest: 0.05, roughness: 0.8 }));
-  faceMesh.position.set(0, 2.22, 0.335);
+  // curve the face plane to follow the head so it reads as a face, not a sticker
+  var faceGeo = new THREE.PlaneGeometry(0.62, 0.86, 16, 20), fp = faceGeo.attributes.position;
+  for (var vi = 0; vi < fp.count; vi++) {
+    var fx = fp.getX(vi), fy = fp.getY(vi), rr = 0.33;
+    var fz = Math.sqrt(Math.max(0, rr * rr - fx * fx * 0.8 - fy * fy * 0.6));
+    fp.setZ(vi, fz - 0.2);
+  }
+  faceGeo.computeVertexNormals();
+  var faceMesh = new THREE.Mesh(faceGeo, new THREE.MeshStandardMaterial({ map: faceTex, transparent: true, alphaTest: 0.05, roughness: 0.8 }));
+  faceMesh.position.set(0, 2.22, 0.2);
   body.add(faceMesh);
   // shorts
   add(body, new THREE.CylinderGeometry(0.42, 0.4, 0.45, 24), shorts, 0, 0.8, 0);
