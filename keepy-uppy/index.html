@@ -58,8 +58,8 @@
   }
   window.addEventListener('resize', resize); resize();
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x2e6b2e, 0.9));
-  var sun = new THREE.DirectionalLight(0xffffff, 0.8);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x2e6b2e, 1.1));
+  var sun = new THREE.DirectionalLight(0xffffff, 1.1);
   sun.position.set(3, 8, 5); sun.castShadow = true; scene.add(sun);
 
   // pitch with stripes
@@ -72,34 +72,56 @@
 
   // ---- footballer ----
   var player = new THREE.Group(); scene.add(player);
-  function mat(c) { return new THREE.MeshLambertMaterial({ color: c }); }
-  var shirt = mat(0x7fd3e6), shorts = mat(0x0a1a4a), skin = mat(0xc68642), sock = mat(0xffffff), boot = mat(0x111111), hair = mat(0x1a1210);
+  function std(c, r) { return new THREE.MeshStandardMaterial({ color: c, roughness: r === undefined ? 0.7 : r, metalness: 0 }); }
+
+  // kit texture: light blue shirt with white trim and the number 10 on the back panel
+  var kitC = document.createElement('canvas'); kitC.width = 256; kitC.height = 256;
+  var kx = kitC.getContext('2d');
+  kx.fillStyle = '#7fd3e6'; kx.fillRect(0, 0, 256, 256);
+  kx.fillStyle = 'rgba(255,255,255,.55)'; kx.fillRect(0, 0, 256, 18); kx.fillRect(0, 238, 256, 18);
+  kx.fillStyle = '#0a1a4a'; kx.font = 'bold 150px Arial'; kx.textAlign = 'center'; kx.textBaseline = 'middle';
+  kx.fillText('10', 128, 130);
+  var kitTex = new THREE.CanvasTexture(kitC);
+  var shirt = new THREE.MeshStandardMaterial({ map: kitTex, roughness: 0.85 });
+  var shorts = std(0x0a1a4a, 0.8), skin = std(0x9c6b4a, 0.55), sock = std(0xffffff, 0.8), boot = std(0x141414, 0.35), hair = std(0x1a1210, 0.9);
   function add(parent, geo, m, x, y, z) { var o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = true; parent.add(o); return o; }
 
   var body = new THREE.Group(); player.add(body);
-  add(body, new THREE.CylinderGeometry(0.42, 0.36, 0.9, 16), shirt, 0, 1.45, 0);          // torso
-  add(body, new THREE.SphereGeometry(0.34, 16, 12), skin, 0, 2.2, 0);                      // head
-  // face photo on the front of the head (the cap and beard are in the photo)
+  // torso: tapered chest with rounded shoulders
+  add(body, new THREE.CylinderGeometry(0.46, 0.36, 0.95, 24), shirt, 0, 1.45, 0);
+  add(body, new THREE.SphereGeometry(0.2, 16, 12), shirt, -0.5, 1.8, 0);
+  add(body, new THREE.SphereGeometry(0.2, 16, 12), shirt, 0.5, 1.8, 0);
+  // neck and head
+  add(body, new THREE.CylinderGeometry(0.13, 0.15, 0.2, 12), skin, 0, 1.98, 0);
+  add(body, new THREE.SphereGeometry(0.31, 24, 18), skin, 0, 2.22, 0);
+  add(body, new THREE.SphereGeometry(0.33, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2.4), hair, 0, 2.3, -0.02);
+  // face photo on the front of the head (cap and beard are in the photo)
   var faceTex = new THREE.TextureLoader().load('face.png');
-  faceTex.anisotropy = 4;
-  var faceMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.86), new THREE.MeshLambertMaterial({ map: faceTex, transparent: true }));
-  faceMesh.position.set(0, 2.2, 0.345);
+  var faceMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.86), new THREE.MeshStandardMaterial({ map: faceTex, transparent: true, alphaTest: 0.05, roughness: 0.8 }));
+  faceMesh.position.set(0, 2.22, 0.335);
   body.add(faceMesh);
-
-  add(body, new THREE.SphereGeometry(0.36, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2.2), hair, 0, 2.26, -0.02); // hair
-  add(body, new THREE.CylinderGeometry(0.1, 0.1, 0.9, 10), skin, -0.62, 1.4, 0);           // arms
-  add(body, new THREE.CylinderGeometry(0.1, 0.1, 0.9, 10), skin, 0.62, 1.4, 0);
-  add(body, new THREE.CylinderGeometry(0.42, 0.4, 0.45, 16), shorts, 0, 0.82, 0);           // shorts
+  // shorts
+  add(body, new THREE.CylinderGeometry(0.42, 0.4, 0.45, 24), shorts, 0, 0.8, 0);
+  // arms: upper arm, forearm, hand (hanging, relaxed)
+  [-1, 1].forEach(function (sd) {
+    add(body, new THREE.CylinderGeometry(0.12, 0.1, 0.55, 14), shirt, sd * 0.6, 1.5, 0);
+    add(body, new THREE.CylinderGeometry(0.1, 0.085, 0.48, 14), skin, sd * 0.66, 1.0, 0.04);
+    add(body, new THREE.SphereGeometry(0.1, 12, 10), skin, sd * 0.68, 0.72, 0.06);
+  });
 
   // legs: pivot at the hip so each foot can swing forward
   function leg(x) {
-    var pivot = new THREE.Group(); pivot.position.set(x, 0.85, 0); body.add(pivot);
-    add(pivot, new THREE.CylinderGeometry(0.16, 0.13, 0.85, 10), shorts, 0, -0.42, 0);
-    add(pivot, new THREE.CylinderGeometry(0.13, 0.12, 0.55, 10), sock, 0, -1.1, 0);
-    add(pivot, new THREE.BoxGeometry(0.22, 0.16, 0.42), boot, 0, -1.42, 0.1);
+    var pivot = new THREE.Group(); pivot.position.set(x, 0.8, 0); body.add(pivot);
+    add(pivot, new THREE.CylinderGeometry(0.19, 0.15, 0.6, 16), skin, 0, -0.3, 0);   // thigh (skin shows below shorts)
+    add(pivot, new THREE.CylinderGeometry(0.15, 0.11, 0.55, 16), skin, 0, -0.9, 0);  // calf
+    add(pivot, new THREE.CylinderGeometry(0.15, 0.14, 0.32, 14), sock, 0, -0.9, 0.0); // sock over the calf
+    add(pivot, new THREE.CylinderGeometry(0.14, 0.14, 0.06, 14), boot, 0, -0.4, 0.0);
+    add(pivot, new THREE.SphereGeometry(0.14, 14, 10), boot, 0, -1.25, 0.0);
+    add(pivot, new THREE.BoxGeometry(0.24, 0.14, 0.44), boot, 0, -1.28, 0.12);      // boot
+    add(pivot, new THREE.BoxGeometry(0.25, 0.04, 0.45), std(0xffffff, 0.4), 0, -1.36, 0.12); // white sole
     return pivot;
   }
-  var legL = leg(-0.2), legR = leg(0.2);
+  var legL = leg(-0.22), legR = leg(0.22);
 
   // body parts that can touch the ball (approximate world positions)
   var parts = {
