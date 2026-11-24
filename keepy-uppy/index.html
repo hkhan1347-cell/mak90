@@ -10,7 +10,7 @@
   .hud{position:fixed;top:14px;left:0;right:0;text-align:center;pointer-events:none}
   .score{font-size:64px;font-weight:900;text-shadow:0 4px 18px rgba(0,0,0,.45)}
   .best{font-size:14px;letter-spacing:1.5px;text-transform:uppercase;color:#f5b82e;font-weight:700}
-  .hint{position:fixed;bottom:18px;left:0;right:0;text-align:center;font-size:14px;color:#c9d6ee;pointer-events:none}
+  .hint{position:fixed;bottom:18px;left:0;right:0;text-align:center;font-size:14px;color:#c9d6ee;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.5)}
   .msg{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:12px;text-align:center;padding:24px 24px 70px;background:linear-gradient(transparent 35%,rgba(5,12,40,.8) 70%)}
   .msg h1{margin:0;text-shadow:0 3px 14px rgba(0,0,0,.5);font-size:40px;font-weight:900;letter-spacing:-.5px}
   .msg p{margin:0;color:#dfe8ff;font-size:17px;max-width:380px}
@@ -21,10 +21,10 @@
 <body>
 <canvas id="gl"></canvas>
 <div class="hud"><div class="score" id="score">0</div><div class="best" id="best">Best 0</div></div>
-<div class="hint" id="hint">Tap when the ball is in the gold ring</div>
+<div class="hint">Tap when the ball is close to his feet, chest, shoulders or head</div>
 <div class="msg" id="menu">
   <h1>Keepy Uppy 3D</h1>
-  <p>Your footballer is ready. Tap when the ball reaches the gold ring at his feet, or his head, to keep it up. Don't let it touch the pitch.</p>
+  <p>Tap when the ball is close to the footballer. The nearest part of his body hits it: feet, chest, shoulders or head. Don't let it touch the pitch.</p>
   <button id="start">Play</button>
 </div>
 <div class="msg hidden" id="over">
@@ -76,7 +76,7 @@
   var shirt = mat(0x1d5fd6), shorts = mat(0x0a1a4a), skin = mat(0xc68642), sock = mat(0xffffff), boot = mat(0x111111), hair = mat(0x1a1210);
   function add(parent, geo, m, x, y, z) { var o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = true; parent.add(o); return o; }
 
-  var body = new THREE.Group(); body.position.y = 0; player.add(body);
+  var body = new THREE.Group(); player.add(body);
   add(body, new THREE.CylinderGeometry(0.42, 0.36, 0.9, 16), shirt, 0, 1.45, 0);          // torso
   add(body, new THREE.SphereGeometry(0.34, 16, 12), skin, 0, 2.2, 0);                      // head
   add(body, new THREE.SphereGeometry(0.36, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2.2), hair, 0, 2.26, -0.02); // hair
@@ -84,16 +84,25 @@
   add(body, new THREE.CylinderGeometry(0.1, 0.1, 0.9, 10), skin, 0.62, 1.4, 0);
   add(body, new THREE.CylinderGeometry(0.42, 0.4, 0.45, 16), shorts, 0, 0.82, 0);           // shorts
 
-  // legs: pivot at the hip so the right leg can swing forward
-  function leg(x, isKick) {
+  // legs: pivot at the hip so each foot can swing forward
+  function leg(x) {
     var pivot = new THREE.Group(); pivot.position.set(x, 0.85, 0); body.add(pivot);
     add(pivot, new THREE.CylinderGeometry(0.16, 0.13, 0.85, 10), shorts, 0, -0.42, 0);
     add(pivot, new THREE.CylinderGeometry(0.13, 0.12, 0.55, 10), sock, 0, -1.1, 0);
     add(pivot, new THREE.BoxGeometry(0.22, 0.16, 0.42), boot, 0, -1.42, 0.1);
     return pivot;
   }
-  var legL = leg(-0.2, false), legR = leg(0.2, true);
-  player.position.set(0, 0, 0);
+  var legL = leg(-0.2), legR = leg(0.2);
+
+  // body parts that can touch the ball (approximate world positions)
+  var parts = {
+    footR:    { p: new THREE.Vector3( 0.25, 0.7, 0.8), type: 'foot',     leg: 'R', vy: [7.2, 8.4] },
+    footL:    { p: new THREE.Vector3(-0.25, 0.7, 0.8), type: 'foot',     leg: 'L', vy: [7.0, 8.0] },
+    chest:    { p: new THREE.Vector3( 0,    1.5, 0.5), type: 'chest',                vy: [6.8, 7.6] },
+    shoulderR:{ p: new THREE.Vector3( 0.6,  1.8, 0.3), type: 'shoulder', side:  1, vy: [6.8, 7.6] },
+    shoulderL:{ p: new THREE.Vector3(-0.6,  1.8, 0.3), type: 'shoulder', side: -1, vy: [6.8, 7.6] },
+    head:     { p: new THREE.Vector3( 0,    2.25, 0.3), type: 'head',                vy: [6.4, 7.4] }
+  };
 
   // ---- ball ----
   var bc = document.createElement('canvas'); bc.width = 256; bc.height = 256;
@@ -105,32 +114,35 @@
   var ball = new THREE.Mesh(new THREE.SphereGeometry(0.22, 24, 18), new THREE.MeshLambertMaterial({ map: new THREE.CanvasTexture(bc) }));
   ball.castShadow = true; scene.add(ball);
 
-  // gold rings: the kick zone (feet) and header zone (head)
-  var ringFoot = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.62, 32), new THREE.MeshBasicMaterial({ color: 0xf5b82e, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
-  ringFoot.position.set(0.25, 0.9, 0.9); ringFoot.rotation.x = -0.4; scene.add(ringFoot);
-  var ringHead = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.62, 32), new THREE.MeshBasicMaterial({ color: 0xf5b82e, transparent: true, opacity: 0.6, side: THREE.DoubleSide }));
-  ringHead.position.set(0, 2.9, 0.4); ringHead.rotation.x = -0.2; scene.add(ringHead);
-  var footPoint = new THREE.Vector3(0.25, 0.9, 0.9), headPoint = new THREE.Vector3(0, 2.9, 0.4);
-
   // ---- game state ----
-  var G = 9.8, ballR = 0.22, state = 'menu', score = 0, pos = new THREE.Vector3(), vel = new THREE.Vector3();
-  var kickT = -1, headT = -1;
+  var G = 9.8, ballR = 0.22, HIT_RANGE = 1.6;
+  var state = 'menu', score = 0, pos = new THREE.Vector3(), vel = new THREE.Vector3();
+  var anim = null;   // { key, t } while a body part is hitting the ball
+  var idleL = 0;
+
   function reset() {
     pos.set(0, 3.2, 0); vel.set(0.6, 0, 0.2);
-    score = 0; scoreEl.textContent = '0'; kickT = -1; headT = -1;
+    score = 0; scoreEl.textContent = '0'; anim = null;
   }
-  function kickBall(strength) {
-    vel.y = strength;
-    vel.x = (Math.random() - 0.5) * 2.2 + (pos.x > 0 ? -0.6 : 0.6) * 0; 
-    vel.z = (Math.random() - 0.5) * 1.2;
-    score++; scoreEl.textContent = score;
-  }
+
+  // the body part closest to the ball hits it
   function tap() {
     if (state !== 'play') return;
-    var dFoot = pos.distanceTo(footPoint), dHead = pos.distanceTo(headPoint);
-    if (dFoot < 1.1) { kickT = 0; kickBall(7.2 + Math.random() * 1.2); }
-    else if (dHead < 1.1) { headT = 0; kickBall(6.4 + Math.random() * 1.0); }
+    var bestKey = null, bestD = Infinity;
+    for (var key in parts) {
+      var d = pos.distanceTo(parts[key].p);
+      if (d < bestD) { bestD = d; bestKey = key; }
+    }
+    if (bestD > HIT_RANGE) return;                 // ball is too far from every part
+    var part = parts[bestKey];
+    var s = part.vy[0] + Math.random() * (part.vy[1] - part.vy[0]);
+    vel.y = s;
+    vel.x = (Math.random() - 0.5) * 2.2;
+    vel.z = (Math.random() - 0.5) * 1.2;
+    anim = { key: bestKey, t: 0 };
+    score++; scoreEl.textContent = score;
   }
+
   function start() {
     reset(); state = 'play';
     document.getElementById('menu').classList.add('hidden');
@@ -162,19 +174,24 @@
     ball.position.copy(pos);
     ball.rotation.x += vel.z * dt * 2; ball.rotation.z -= vel.x * dt * 2;
 
-    // kick and header animations
-    if (kickT >= 0) { kickT += dt * 3.2; legR.rotation.x = -Math.sin(Math.min(kickT, 1) * Math.PI) * 1.4; if (kickT >= 1) kickT = -1; }
-    else legR.rotation.x = 0;
-    if (headT >= 0) { headT += dt * 2.6; body.rotation.x = -Math.sin(Math.min(headT, 1) * Math.PI) * 0.25; if (headT >= 1) headT = -1; }
-    else body.rotation.x = 0;
-    legL.rotation.x = Math.sin(now / 400) * 0.05;
-
-    // rings pulse when the ball is close
-    var near = Math.min(pos.distanceTo(footPoint), pos.distanceTo(headPoint));
-    var glow = near < 1.1 ? 1 : 0.35;
-    ringFoot.material.opacity = ringHead.material.opacity = glow;
-    ringFoot.scale.setScalar(near < 1.1 ? 1.15 : 1);
-    ringHead.scale.setScalar(near < 1.1 ? 1.15 : 1);
+    // idle sway, then the hitting animation for the part that touched the ball
+    idleL = Math.sin(now / 400) * 0.05;
+    legL.rotation.x = idleL; legR.rotation.x = 0;
+    body.rotation.x = 0; body.rotation.z = 0;
+    if (anim) {
+      anim.t += dt * 3;
+      var k2 = Math.min(anim.t, 1), sw = Math.sin(k2 * Math.PI), part = parts[anim.key];
+      if (part.type === 'foot') {
+        (part.leg === 'R' ? legR : legL).rotation.x = -sw * 1.4;
+      } else if (part.type === 'head') {
+        body.rotation.x = -sw * 0.35;                  // head goes back, then forward
+      } else if (part.type === 'chest') {
+        body.rotation.x = -sw * 0.15;                  // chest pushes out
+      } else if (part.type === 'shoulder') {
+        body.rotation.z = part.side * sw * 0.2;        // shoulder dips into the ball
+      }
+      if (anim.t >= 1) anim = null;
+    }
 
     renderer.render(scene, camera);
     requestAnimationFrame(frame);
